@@ -27,7 +27,7 @@
             font-family: var(--font); color: var(--text); background: #000;
         }
 
-        /* FONDO AESTHETIC FIJO */
+        /* FONDO */
         .bg-fixed {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
             background-image: url('https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=2074&auto=format&fit=crop'); 
@@ -40,12 +40,11 @@
         }
 
         /* --- 2. LAYOUT --- */
-        .app-container { display: flex; height: 100%; width: 100%; }
+        .app-container { display: flex; width: 100%; height: 100%; }
 
         .sidebar {
-            width: 280px; height: 100%; display: none; flex-direction: column; padding: 30px 20px;
-            background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(30px);
-            border-right: 1px solid rgba(255,255,255,0.05); z-index: 100;
+            width: 280px; background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(255,255,255,0.05); display: none; flex-direction: column; padding: 25px; z-index: 100;
         }
 
         .main-content {
@@ -54,7 +53,7 @@
         }
 
         /* SECCIONES */
-        .section { margin-bottom: 60px; scroll-margin-top: 100px; /* Ajuste para cabecera fija */ }
+        .section { margin-bottom: 60px; scroll-margin-top: 100px; }
 
         /* TARJETAS GLASS */
         .glass-card {
@@ -70,34 +69,26 @@
             padding-bottom: 8px; display: flex; justify-content: space-between; letter-spacing: 1px;
         }
 
-        /* --- 3. BARRA DE ESTADO (HUD) --- */
+        /* --- 3. HUD --- */
         .status-hud {
             position: sticky; top: 0; z-index: 50; margin-bottom: 30px;
-            background: rgba(15, 15, 15, 0.8); backdrop-filter: blur(20px);
+            background: rgba(15, 15, 15, 0.85); backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border); border-radius: 16px;
             padding: 10px 20px; display: grid; grid-template-columns: auto 1fr auto;
             align-items: center; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-
         .hud-left { display: flex; align-items: center; gap: 15px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; }
         .hud-time { font-size: 1.8rem; font-weight: 800; line-height: 1; color: white; font-variant-numeric: tabular-nums; }
         .hud-date { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; font-weight: bold; line-height: 1.2; }
-
         .hud-center { display: flex; flex-direction: column; justify-content: center; }
         .hud-weather-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #ddd; }
         .hud-loc { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-
         .hud-right { text-align: right; min-width: 200px; }
         .hud-label { font-size: 0.65rem; color: var(--blue); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
         .hud-event { font-size: 0.9rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
         .hud-sub { font-size: 0.7rem; color: #888; }
-
-        /* SYNC INDICATOR DOT */
-        .sync-dot {
-            width: 10px; height: 10px; border-radius: 50%; background: #333; 
-            margin-left: 10px; display: inline-block; box-shadow: 0 0 5px rgba(0,0,0,0.5);
-            transition: 0.3s;
-        }
+        
+        .sync-dot { width: 10px; height: 10px; border-radius: 50%; background: #333; margin-left: 10px; display: inline-block; box-shadow: 0 0 5px rgba(0,0,0,0.5); transition:0.3s; }
         .sync-dot.active { background: var(--green); box-shadow: 0 0 10px var(--green); }
         .sync-dot.working { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
         .sync-dot.error { background: var(--red); box-shadow: 0 0 10px var(--red); }
@@ -179,6 +170,21 @@
         .data-table th { text-align: left; color: #888; border-bottom: 1px solid #444; padding: 8px; font-size: 0.75rem; }
         .data-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
+        /* Full Schedule */
+        #fullScheduleContainer { display: none; margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; }
+        .full-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+        .day-col { background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid #333; }
+        .day-head { color: var(--gold); font-weight: bold; margin-bottom: 10px; text-align: center; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        .fs-item { font-size: 0.7rem; margin-bottom: 5px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 4px; }
+        
+        /* SCHEDULE ROWS */
+        .schedule-row { display: flex; border-bottom: 1px solid #333; padding: 8px 0; align-items: center; }
+        .schedule-row:last-child { border-bottom: none; }
+        .time-col { font-weight: bold; color: var(--blue); width: 60px; flex-shrink: 0; }
+        .class-col { flex-grow: 1; }
+        .class-name { display: block; font-size: 0.9rem; font-weight: 600; }
+        .class-prof { display: block; font-size: 0.75rem; color: var(--dim); }
+
     </style>
 </head>
 <body>
@@ -191,8 +197,9 @@
         <aside class="sidebar">
             <div style="margin-bottom:40px; padding-left:15px;">
                 <div style="font-size:1.4rem; font-weight:800; color:var(--gold); letter-spacing:1px;">ALEXANDRO OS</div>
-                <div style="font-size:0.7rem; color:white; opacity:0.5; letter-spacing:2px; margin-top:5px;">V31 SYNC FIX</div>
+                <div style="font-size:0.7rem; color:white; opacity:0.5; letter-spacing:2px; margin-top:5px;">V39 FINAL</div>
             </div>
+            
             <button class="nav-btn-side active" onclick="scrollToId('home')"><span>📅</span> DASHBOARD</button>
             <button class="nav-btn-side" onclick="scrollToId('uni')"><span>🎓</span> ACADEMIA</button>
             <button class="nav-btn-side" onclick="scrollToId('fisico')"><span>💪</span> ING. CORPORAL</button>
@@ -207,10 +214,10 @@
             
             <div class="status-hud">
                 <div class="hud-left">
-                    <div class="hud-time" id="clock">00:00</div>
+                    <div class="hud-time" id="clock">00:00:00</div>
                     <div style="display:flex; flex-direction:column;">
                         <span class="hud-date" id="date">--</span>
-                        <span class="hud-date" id="year" style="color:#666">2025</span>
+                        <span class="hud-date" id="weekInfo" style="color:var(--gold); font-size:0.65rem; font-weight:800; letter-spacing:1px;">CALCULANDO...</span>
                     </div>
                 </div>
                 <div class="hud-center">
@@ -229,6 +236,7 @@
             </div>
 
             <div id="home" class="section">
+                
                 <div class="glass-card" style="border-left: 4px solid var(--gold); display:flex; align-items:center; gap:20px;">
                     <div style="font-size:2rem;">🚌</div>
                     <div>
@@ -236,26 +244,32 @@
                         <span style="color:#ccc; font-size:0.85rem;" id="transportDesc">--</span>
                     </div>
                 </div>
+
                 <div class="glass-card">
                     <h2>
-                        HORARIO UPIT
-                        <div style="display:flex; gap:5px;">
-                            <button onclick="setWeek('odd')" class="btn-sm btn-gold" id="btnOdd" style="padding:4px 10px; font-size:0.75rem;">IMPAR</button>
-                            <button onclick="setWeek('even')" class="btn-sm btn" id="btnEven" style="padding:4px 10px; font-size:0.75rem; background:transparent; border:1px solid #555;">PAR</button>
-                        </div>
+                        AGENDA DE HOY
+                        <span id="todayBadge" style="background:rgba(212,175,55,0.2); color:var(--gold); padding:2px 8px; border-radius:4px; font-size:0.7rem;">AUTO</span>
                     </h2>
                     <div id="scheduleContainer"></div>
+                    
+                    <button class="btn" onclick="toggleFullSchedule()" style="margin-top:15px; border-color:var(--gold); color:var(--gold);">📅 VER SEMANA COMPLETA</button>
+
+                    <div id="fullScheduleContainer">
+                        <div class="full-grid" id="fullScheduleGrid"></div>
+                    </div>
                 </div>
+
                 <div class="glass-card">
                     <h2>MISIONES DIARIAS</h2>
                     <div id="taskList"></div>
-                    <div style="display:flex; gap:10px; margin-top:15px;">
+                    <div style="display:flex; gap:10px; margin-top:10px;">
                         <input type="text" id="taskIn" placeholder="Nueva misión...">
                         <button class="btn-gold" style="width:auto; padding:0 25px; border-radius:6px;" onclick="addTask()">ADD</button>
                     </div>
                     <button class="btn" style="margin-top:10px;" onclick="aiPlan()">🤖 ASISTENTE IA: PLAN DEL DÍA</button>
                 </div>
-                <div class="glass-card">
+                
+                 <div class="glass-card">
                     <h2>AGENDA MENSUAL</h2>
                     <div style="height:500px; border-radius:8px; overflow:hidden; background:rgba(0,0,0,0.5);">
                         <iframe src="https://calendar.google.com/calendar/embed?src=ia.ciocmata%40gmail.com&ctz=Europe%2FBucharest&mode=MONTH&bgcolor=%23000000&showTitle=0&showPrint=0&showTabs=1&showCalendars=0" style="border:0; width:100%; height:100%;"></iframe>
@@ -294,7 +308,7 @@
                     <div class="nexus-grid">
                         <a href="https://www.youtube.com/watch?v=VecbXgT0JGM" target="_blank" class="nexus-btn"><span style="font-size:1.5rem;">🧘</span><span>ACTIVACIÓN (15')</span></a>
                         <a href="https://www.youtube.com/results?search_query=full+body+hypertrophy+workout" target="_blank" class="nexus-btn"><span style="font-size:1.5rem;">🏋️</span><span>FUERZA TARDE</span></a>
-                        <a href="https://www.youtube.com/watch?v=ml6cT4AZdqI" target="_blank" class="nexus-btn"><span style="font-size:1.5rem;">🏃</span><span>CARDIO HIIT</span></a>
+                        <a href="https://www.youtube.com/results?search_query=ml6cT4AZdqI" target="_blank" class="nexus-btn"><span style="font-size:1.5rem;">🏃</span><span>CARDIO HIIT</span></a>
                     </div>
                 </div>
                 <div class="glass-card">
@@ -306,7 +320,7 @@
                         <button class="btn-gold" style="width:50px;" onclick="addFitLog()">💾</button>
                     </div>
                     <table class="data-table">
-                        <thead><tr><th>FECHA</th><th>PESO</th><th>AYUNO</th><th>ENTRENO</th></tr></thead>
+                        <thead><tr><th>FECHA</th><th>PESO</th><th>AYUNO</th><th>ENTRENO</th><th></th></tr></thead>
                         <tbody id="fitLogBody"></tbody>
                     </table>
                 </div>
@@ -315,14 +329,14 @@
             <div id="ai" class="section">
                 <h1>Motores de Inteligencia</h1>
                 <div class="ai-grid">
-                    <a href="https://gemini.google.com/" target="_blank" class="ai-card"><span class="ai-icon">✨</span><span class="ai-label">GEMINI</span></a>
-                    <a href="https://chat.openai.com/" target="_blank" class="ai-card"><span class="ai-icon">🤖</span><span class="ai-label">CHATGPT</span></a>
-                    <a href="https://www.perplexity.ai/" target="_blank" class="ai-card"><span class="ai-icon">🔍</span><span class="ai-label">PERPLEXITY</span></a>
-                    <a href="https://notebooklm.google.com/" target="_blank" class="ai-card"><span class="ai-icon">📓</span><span class="ai-label">NOTEBOOKLM</span></a>
-                    <a href="https://prezi.com/" target="_blank" class="ai-card"><span class="ai-icon">📽️</span><span class="ai-label">PREZI</span></a>
-                    <a href="https://claude.ai/" target="_blank" class="ai-card"><span class="ai-icon">🧠</span><span class="ai-label">CLAUDE</span></a>
-                    <a href="https://gamma.app/" target="_blank" class="ai-card"><span class="ai-icon">📊</span><span class="ai-label">GAMMA</span></a>
-                    <a href="https://github.com/features/copilot" target="_blank" class="ai-card"><span class="ai-icon">💻</span><span class="ai-label">COPILOT</span></a>
+                    <a href="https://gemini.google.com/" target="_blank" class="card-btn"><span class="card-icon">✨</span><span class="ai-label">GEMINI</span></a>
+                    <a href="https://chat.openai.com/" target="_blank" class="card-btn"><span class="card-icon">🤖</span><span class="ai-label">CHATGPT</span></a>
+                    <a href="https://www.perplexity.ai/" target="_blank" class="card-btn"><span class="card-icon">🔍</span><span class="ai-label">PERPLEXITY</span></a>
+                    <a href="https://notebooklm.google.com/" target="_blank" class="card-btn"><span class="card-icon">📓</span><span class="ai-label">NOTEBOOKLM</span></a>
+                    <a href="https://prezi.com/" target="_blank" class="card-btn"><span class="card-icon">📽️</span><span class="ai-label">PREZI</span></a>
+                    <a href="https://claude.ai/" target="_blank" class="card-btn"><span class="card-icon">🧠</span><span class="ai-label">CLAUDE</span></a>
+                    <a href="https://gamma.app/" target="_blank" class="card-btn"><span class="card-icon">📊</span><span class="ai-label">GAMMA</span></a>
+                    <a href="https://github.com/features/copilot" target="_blank" class="card-btn"><span class="card-icon">💻</span><span class="ai-label">COPILOT</span></a>
                 </div>
             </div>
 
@@ -347,22 +361,24 @@
 
             <div id="sports" class="section">
                 <h1>Inteligencia Deportiva</h1>
+                
                 <div class="glass-card">
                     <h2>MIS EQUIPOS</h2>
                     <div class="team-grid">
                         <a href="https://www.google.com/search?q=FC+Barcelona+partidos" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg" class="team-logo"><span class="team-name">BARÇA</span></a>
                         <a href="https://www.google.com/search?q=Real+Madrid+partidos" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg" class="team-logo"><span class="team-name">MADRID</span></a>
-                        <a href="https://www.google.com/search?q=FCSB+meciuri" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/e/e3/FCSB_logo.svg/180px-FCSB_logo.svg.png" class="team-logo"><span class="team-name">FCSB</span></a>
-                        <a href="https://www.google.com/search?q=Nationala+Romaniei+fotbal" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/fr/thumb/9/94/%C3%89quipe_de_Roumanie_de_football_%28logo%29.svg/150px-%C3%89quipe_de_Roumanie_de_football_%28logo%29.svg.png" class="team-logo"><span class="team-name">ROMÂNIA</span></a>
-                        <a href="https://www.google.com/search?q=Seleccion+Espanola+futbol" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/31/Spain_National_Football_Team_badge.png/150px-Spain_National_Football_Team_badge.png" class="team-logo"><span class="team-name">ESPAÑA</span></a>
+                        <a href="https://www.google.com/search?q=FCSB+meciuri" target="_blank" class="team-card"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAA3NCSVQICAjb4U/gAAACHFBMVEVHcEz////////////////////////+/v////////////////////////////////////////////////////////////////////////////////////////////8cNmT/////8QD/+QD/8wDsACRWMFXyGh0GNmX/9wAAAmb/9QDtGyT/9AAANmb/9gAENWVeMlvzAR/5+v397wDy5QCjJ0LCxtP09fgXM2T57AAHL2MAGmUALGQAJWbt4QD80Qj+4wLWzQDu8PXHwi8RMWXJzdjl2gDN0t7kHSPuFSJ0gZb0FR2cpbqvqw2Egk7LwwDfpyGhoD/o6vDKUy7g4+vQZSjbzh7kACPh1wAAEWMxSWBgalG9ZDLhSh+7tTn4rBHvOxvvTR8AP2GUm6TuLh7X2+KHkamwqj5BUlnYQChKYooiRFx7ak6zusvxZhzvCiKWl0DxKBynr8Xl2h7r4BD0jhihoB7tDiRxeFF3fkFxempbYVe7wcaLjBlodYe/w7n5wQ5fTlRSYDmpaT/YeBlQIVXGvwCNjz/fax6Njl9DAVe9vHR5fCeJVUxJV1uytpr2oBWhVEQrU1jx1xLQxya6tAmdBUTlFSPnDiJocFC1Sznwehzl2g+nqouXnonS1d/AsjvSsxbctByjJEJLZVRyUlQHTF5OCl3Dv1GemwA8VXJdZB8PSHludR53KkuttLyvsGrY0T1IPGDgACgFeYJ0AAAAH3RSTlMAHcYraw0E/bz16pKeqF8xU0zSsTVy79/XN0eDQH2zCmbgYAAAB1ZJREFUWIWNV/dbGlkXVqMitpi40WST3TkzTJI7IyHfAAvSm8CKgAIq2Eti771GYy+JJmp6fZ6U7dnyff/gd2cEVhAM54fBe+e+r/eec+57zqSlJbFiKL0SHVwViYqSLUxg2VmFF/IAQHQlE3NkFxVl4gFcyLyQMkMuD7Cr+WdRWgH/0+Xnn5dSxBeCHK+e7QJQQ066SCQCeLfMD3KzUiO4Btb55XHjW9XceyjIEotcj4b+6XHu/AWXs1PCpxcDLCvfkEblAxFk5InAbnRolMpfrFD6bUoEGQByu4UlSdItuEFe+1SGB2+t+O9UGNJzYWgrhBGkxPj0jhy65i38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" class="team-logo"><span class="team-name">FCSB</span></a>
+                        <a href="https://www.google.com/search?q=Nationala+Romaniei+fotbal" target="_blank" class="team-card"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAEZ0FNQQAAsY58+1GTAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAAOxAAADsQBlSsOGwAABKBJREFUeNrtW81r1EAUnySzKYoUP7ClKnbBj5MeFI9ioVcV+i94EfEiXkV7UNGz4kH0H6ggFDx4UFDxLBQ8isquFQ9qq63Y7rpJnjOaLdls5vtlu6X7SpptZieZ33u/9zHTDCEDGchANrN4ssZarXYMAC6xj5Ps2MOOYIPgitnxhR0vPM+7U61W54wUwEB79Xr9OjtfYX/6G9zICVPCrfHx8Wl2hnwjLeqRgr/a/vvnr9Xoy7eVKE7iVEMZZQmeunNbMzk8thwrBgdM20oEzXlCoyWBIaDgSkA9f+8ohe07OD6fY2GYeNs1JQNS2r/hHVtRDPcfv209eT0frjYjkiSQZUl6Jl3XuJw5XiMPzr/MaQsUaitqBzJ/eytZek0L7pP5nLulv2WIDJ2d/BNePFchldBLmXAi7w5+Af0vta/fm5lrzTz7GK40Wh3g+l7YWJOVBll99DRs3n3YamNNsRGpAtKARxaXfkezrz6FghixYXTRmH1eegvfoyw2lQJ4tCfvPy8zn4dC1mkYoI/yQUJaH+pRFptKAf9SXczQr7mXwM9F1/tGK+1nRhFksakUIBy3OfWhpO/iCdVTJGgrBtfQFqwyHACVp2hwYDNYWhp66j7UxqVE7BCOExMAsjKozBDquAZIHg2legoaA7RjQmH1159BkboCl4Iv05RIaZfKhqJKe/nmLvBa1jcAYg1a3M96qosDXjRI6JmnUAzG5cF3fhfwR2+QCVQuSZ3cjABSlhJY35b+BoOg5kMFA4VBedxFugV1oY8wHoCqJ9hbH5H+1nWAbmWIGuyktwFrH6SYsccMvKQNNFhRfikM2s8rrgxBAR4JpMD6uu5L7elvMlMESzcQxYEeMACI+QKIOXiiWTyBke+DAaOoqwbl9zdwA+jjFSGrYKgshWXge2N950pQLy4oWGADfr0ZoBUMncHLdIhjfdQFEfVzTcEDDi3dXAAQ4oLOIqdljaBj/bKygFo3oGF1hxpBp+hxCYIAdmwDgfc7gc8PBsDFMrhBUFl2agG3nyTZUt8tCOoMEGysbpY5XMGjrQfYVYWI4B2CVcmlsIzOhplABt5h8QS1EuxOoTZWL7I8MQffyyCoVzdYKsPG8gbTZ1oeYBPg6wMetRLsriHAHnzuuaBVUCHXAbgZwM7qWnMIKRPWaT3APAOsD/hSsgBIX4Y0qdnFaVDtBrqGKHE9AAe4YiVII+iBdSEEbi9E/u+KPEdQsQDMjYNcB9h+AcEFwIaZpa4H2ALXiGBI4EUK4K+4B37ge26rT4AP3AY8/w+XH3gZbB1S9IYI32lBDu0bDjzPbIrc+aO5SiS9jgCeYfAPjAdZbCoFvOC/RnYNV6ZO7WmqgYKiaAIc4BbguQSnJ5rByGgli02qAL7Hhp0S/nn6wslwamKsyZmjBpp7NqioDvqupOhaBD5mlvfOTDSHr1xuv/KfpNg68RY9slar3chumfm6sBy9qy9GURxpvxm5e7iRHNn/I7bBmJfGRxLEPzxfuzMNvfBgldKRUZox7M1qtXpNKwvwDUZ8j0170xRzB8oPizCIIkNHnbqvbZoqatz02+YGMpCBbG75CwdqvTRRDZCUAAAAAElFTkSuQmCC" class="team-logo"><span class="team-name">ROMÂNIA</span></a>
+                        <a href="https://www.google.com/search?q=Seleccion+Espanola+futbol" target="_blank" class="team-card"><img src="data:image/png;base64,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" class="team-logo"><span class="team-name">ESPAÑA</span></a>
                     </div>
                 </div>
+
                 <div class="glass-card">
                     <h2>COMPETICIONES</h2>
                     <div class="team-grid">
-                        <a href="https://www.google.com/search?q=Clasificacion+La+Liga" target="_blank" class="team-card"><img src="https://assets.laliga.com/assets/public/ligas/laliga-ea-sports/active/logos/laliga-ea-sports-h-w.svg" class="team-logo"><span class="team-name">LA LIGA</span></a>
-                        <a href="https://www.google.com/search?q=Clasificacion+Liga+1+Romania" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/SuperLiga_Romania_logo.png/180px-SuperLiga_Romania_logo.png" class="team-logo"><span class="team-name">SUPERLIGA</span></a>
-                        <a href="https://www.google.com/search?q=Champions+League+partidos" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/UEFA_Champions_League_logo.svg/180px-UEFA_Champions_League_logo.svg.png" class="team-logo"><span class="team-name">UCL</span></a>
+                        <a href="https://www.google.com/search?q=Clasificacion+La+Liga" target="_blank" class="team-card"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAABHlJREFUeJztml2IVVUUx39rSBkyC5OCiEBfBNNeLAgTiejYg7umIpDKQfumjwchKkvCxMgKKgKfrCmZwqRvsDaVLQbLmkyFVJiipBgKIiow+tA+rN3DuTOMdu85a917TwadH9y3/157rXXXPmftvQ/U1NTU1NTU1NTU1NT8D5EqjKaQTQbmAz0G+SRgu0Q9VGCvBzgX6DW6MAnYJ1G/KRMeZzToZSWw1qjdAZxfolkCbHbM/wswDyhNQNcrIIVsLrAX278PMEWiHiywNx34DDjZ4cZiifqGRWh10sOQw25fUfANtuEL/lFr8NDlBKSQPQ6cYpQ/I1FfK7G3ApjrcGFUot7h0HcvASlkC4EVRvn+Mm0K2ZnAYw4XDgP9Dj3QpQSkkJ0AbHIM6ZeoPxTY6wGexeffOon6vkMPzgmKeBI4w6hdJVF3lmjWkz/FrQxJ1Psc+nE6TkAKWT9wpVE+IlEfLLEXgFsdLvwKXOvQH0FHCUghm0r+71s4BFxh0Hne9wDXSdQvnWPG6bQCBrF3Z/dK1E+LBClkm4CpjvmHJKo3YUfQdgJSyG4BLjfKX5CohU/0FLJrgKsdLnwNLHbom9JWAlLIZgMPGeXfAjeX2JsFPOJ04waJ+ptzzD9otwI2Aicatcsk6oESzQAw3TH/ek+3V4Q7ASlkK8l3ZhY2S9S3DPYWOlz4HLjdoS/EtRlqlP7HRvl+iTqri/bGOFWifucc0xJzBaSQHQ+8aJT/ASw32HvZOn+Du7sZPPiWwCpgjlG7RqJ+UKK5H5jtmP89ifqwQ2/CtARSyGYA+7C9o3dK1MJnRArZImCrZe4GPwNzOml4WmGtgAXYgv8LuKBIkEI2DftSGmN5FcGD/UhsmlG3ETirsb6bzXUQWA2cZLQHMCBRX3HoXVgT8KdRd33j14wvyM8BLjLaAvhRot7o0LuxLoGPOphjFOgj7x0873uwbZ46wpQAiboDeNVpew9wqUSd2Tj6eh1otjRasU6iqnNON57X4G2A5R28F7gYmCdRtwCkkK3F3j1CflRuPVbvCG8neB7Q6tjpK+AB4CmJenjCmPmNMda5fidP3ojHt3Zx7QUk6jB5AzORA8BNwAyJumFi8A224Ev0nf9W8NDmxUgK2fPkvcEaiTpQoBsEljlMD0nUC9vxqV3avRpbCkwuudHpwxf89/gORLpCVZejpwG7gNMdw5ZK1Oeq8KeIKq7GAJ7GF/zgsQgeqrkcvQxfzzAqUWd22w8rVVSA50wf8p7hmFHF9wHnOLRPSNSRFLKi88Ve4KeiDyg6oYolkKxS8h6i2Z8g5F959JJvne+SqKNdcfAoqqiA3diqQCi+93+H/B5xuCtetaCKBGzAtwyORskbLPdNbztU1QfsBs52DhsmD/ztClxqSVUfSS0hP0OcYtB+SF7qQxX5UkglFQDjX4y8WyDZA9wjUd+sygcLVXWCSNTtQLPvdXYBl5BveY9p8FBhBYyRQrYVWAR8AqyWqC9VPaeHqp4BE7kKWDB2OlRTU1NTU1NT81/hbx6WOVi9QQlkAAAAAElFTkSuQmCC" class="team-logo"><span class="team-name">LA LIGA</span></a>
+                        <a href="https://www.google.com/search?q=Clasificacion+Liga+1+Romania" target="_blank" class="team-card"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAA3NCSVQICAjb4U/gAAAASFBMVEVHcEz/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABP/ABOKBE/BAAAAF3RSTlMAqOkX+mnRwS49Bw+0d0/ynOEgkYZHXDqJCgMAAAJVSURBVFiF7VXbkqUgDAx3EAQENf//p5vI8WG2amYL52mr7IeDR0kTOqEBePHixX8Avydr0+6fxq/4wfqQoP+WwNwE4UFwDA2Om0CBCnEyfkM8400AGXFbpggWy4l/4i0E+pkkcIgZ3CAQvBk3FQ9QEQ3sdxEMs8xh5ZA8CDKI+VI2kg1i4XjdgCRtkwQgUfshQgGvUc7G8x720UqWtZhvxqWghlauImgsc0W8YLgOpB6ak58eIKGMnk9CwvQkHtSGlVIoXkr1iACUptRx8/gw/mro3GZb8CtMWR/of8NT6mqNoB6aYkPdjxhD1/N9PAjsbSj2GQHAkayUNh3/mrd8r9Oi1A8fP8s4a+t8pRcj7PXQrl1q1TX163H8sOAN71mSjB+XIrszXuKZyPXoBJ69SCcylS+HEFTzhAhLONjWhfOQN621WIigjAtDFSzVHFfjN43HMFIz3GxPSNO3kyaxkogHJVzksAqX0BJtbO5Khj2D3NtvKIJEaVA7J1cikPp6exIBnY2Km4J1PclwemQi4DzIgg8eT9KCXlI2ckVJeyBPE0yb7eUIEleBHQSloDpqztGTX5YuUIdh44VvI/oi9uGGDrdO/eTt5WkWaaqDRB7rExa7S/I7f/VbpUy00LQp3qOsS0eZXP1cLSeNnQgcVvKpmhOyVpUqsLOMPmcaznEFsAxcHIHb6UN06CxqoxxakdZOy0ueJtFs7u8jFk01dCNrfX1IoxgOE7taZ29Et7O770mE5r9vlzjucVNrci5X2yE4a+jvarIKD7zpF37y4sWLGfwBji0uMJOqW8UAAAAASUVORK5CYII=" class="team-logo"><span class="team-name">SUPERLIGA</span></a>
+                        <a href="https://www.google.com/search?q=Champions+League+partidos" target="_blank" class="team-card"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAA3NCSVQICAjb4U/gAAAAS1BMVEVHcEwBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFYBAFbquPT/AAAAGHRSTlMASRHSr2cKKRqiNHGJBX7iW5i+PchU9u2XKnODAAAAAWJLR0QAiAUdSAAAAelJREFUWIXtVcmOpTAMNNmclSxs/v8vHYeeQ5+eSGakVkuUIAuSK45dNgAvXrz4BfDLoZT9B4JIRDng7PFCq0wJIEklJ+wNlQS43+tGdZxAxj7qe30SraP2SOY23QCWVW9UzSDB4u+JLnW7H8qoB9B9Rsdp+ArDMkxwulYy21O4t3rUXhFx/lNnOLoDTgwSeFJ9una2PTzKczQNVt7iaV3IpvsxaM8uQHf979WJ4jBBd8LIrwiueR3PAogt34HkbPqJ4xlaci32k8lvcwxgaRHHRfmYtGcg4HQ/+B+wa2Sss01NuLBxFWsdhnV8Y6sFtLLpZDG5mTSIYFRSCyJogqlb+OYwchSWZZ8xZ6R496ESJ5XYVfB9eoSqloXvzg3FQtD9cYpfm1RDDiUWo9SnunIroFaGAHMFR0AOeOC93ATBThii+hhQyew6RwIXCFRtsQHVnUlOBEpOXwHqx1/EQeUI/VSJJ+6WbIbeiigFWSTskEPZVvUpBrYkiwYFF5HFZIVPyH8Ufv3Rm1QS6XjSWoSBZCzrt0vYezCCV8IKeCrp3kZIR27NFvJa7epAAoUIT+tqZ+mT47yFiBkMhAqKPzzXk+wEnK7LXZzCVpig9Q/pKUFVzexObQV2EaTzRu4FmmuPPXjx4sUP4A9eNhYD8q4GggAAAABJRU5ErkJggg==" class="team-logo"><span class="team-name">UCL</span></a>
                     </div>
                 </div>
             </div>
@@ -382,7 +398,7 @@
             <div id="sync" class="section">
                 <div class="glass-card" style="border-left: 4px solid var(--blue);">
                     <h2>☁️ CONFIGURACIÓN NUBE</h2>
-                    <p style="font-size:0.8rem; color:#aaa; margin-bottom:15px;">Conecta JSONBin.io para sincronizar automáticamente.</p>
+                    <p style="font-size:0.8rem; color:#aaa; margin-bottom:15px;">Conexión automática activa con JSONBin.io. ID: 692e1fb7a...</p>
                     <input type="text" id="cfg_bin" placeholder="Bin ID (ej: 65d4...)" style="margin-bottom:10px;">
                     <input type="password" id="cfg_key" placeholder="API Key (X-Master-Key)" style="margin-bottom:10px;">
                     <button class="btn-gold" onclick="saveConfig()">CONECTAR Y SINCRONIZAR</button>
@@ -403,25 +419,68 @@
     </nav>
 
     <script>
-        // --- 1. SYSTEM CLOCK & HEADER ---
+        // --- 1. SYSTEM CLOCK & WEEK LOGIC (CHRONOS) ---
+        function getWeatherDescription(code) {
+            if (code === 0) return "Cielo Despejado";
+            if (code >= 1 && code <= 3) return "Parcialmente Nublado";
+            if (code >= 45 && code <= 48) return "Niebla";
+            if (code >= 51 && code <= 55) return "Llovizna";
+            if (code >= 61 && code <= 65) return "Lluvia Moderada";
+            if (code >= 80 && code <= 82) return "Chubascos Intensos";
+            if (code >= 71 && code <= 75) return "Nieve";
+            if (code >= 95) return "Tormenta";
+            return "Condición Desconocida";
+        }
+        
+        function getAcademicWeek() {
+            const now = new Date();
+            const refDate = new Date('2025-12-01T00:00:00'); // 1 Dic 2025 = Semana 10
+            const diffTime = now - refDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const weeksPassed = Math.floor(diffDays / 7);
+
+            let currentWeek = 10 + weeksPassed;
+
+            // Vacation Override (20 Dec - 11 Jan)
+            const d = now.getDate();
+            const m = now.getMonth();
+            if ((m === 11 && d >= 20) || (m === 0 && d <= 11)) {
+                return { type: 'vacation', label: 'VACACIONES DE INVIERNO', num: currentWeek };
+            }
+
+            // Return normal week number
+            const type = currentWeek % 2 === 0 ? 'par' : 'impar';
+            return { type: type, label: `SEMANA ${currentWeek} (${type.toUpperCase()})`, num: currentWeek };
+        }
+
         setInterval(() => {
             const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
-            document.getElementById('date').innerText = now.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'short'});
-            document.getElementById('year').innerText = now.getFullYear();
+            // 1. RELOJ COMPLETO CON SEGUNDOS
+            document.getElementById('clock').innerText = now.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+            // 2. FECHA COMPLETA
+            document.getElementById('date').innerText = now.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+            
+            // 3. WEEK LOGIC
+            const wData = getAcademicWeek();
+            if (wData.type === 'vacation') {
+                document.getElementById('weekInfo').innerText = wData.label;
+                document.getElementById('weekInfo').style.color = "var(--blue)";
+            } else {
+                document.getElementById('weekInfo').innerText = wData.label; // Muestra 'SEMANA 10 (PAR)'
+                document.getElementById('weekInfo').style.color = "var(--gold)";
+                // Auto-set internal week variable
+                if(week !== wData.type) {
+                     week = wData.type;
+                     renderSchedule();
+                     localStorage.setItem('dem_week', wData.type);
+                }
+            }
             
             // Transport Alert
             const day = now.getDay();
-            if(day === 2) { 
-                document.getElementById('transportTitle').innerText = "BASE"; 
-                document.getElementById('transportDesc').innerText = "Sin viajes";
-            } else if(day === 0) {
-                document.getElementById('transportTitle').innerText = "07:30"; 
-                document.getElementById('transportDesc').innerText = "Rosquillas";
-            } else {
-                document.getElementById('transportTitle').innerText = "SALIDA 06:45"; 
-                document.getElementById('transportDesc').innerText = "Maxitaxi 07:00";
-            }
+            if(day === 2) { document.getElementById('transportTitle').innerText = "BASE"; document.getElementById('transportDesc').innerText = "Sin viajes"; }
+            else if(day === 0) { document.getElementById('transportTitle').innerText = "07:30"; document.getElementById('transportDesc').innerText = "Rosquillas"; }
+            else { document.getElementById('transportTitle').innerText = "SALIDA 06:45"; document.getElementById('transportDesc').innerText = "Maxitaxi 07:00"; }
         }, 1000);
 
         navigator.geolocation.getCurrentPosition(async p => {
@@ -430,8 +489,10 @@
                 const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${p.coords.latitude}&longitude=${p.coords.longitude}&current_weather=true`);
                 const d = await res.json();
                 document.getElementById('weatherTemp').innerText = Math.round(d.current_weather.temperature) + "°C";
-                document.getElementById('weatherCond').innerText = "Clima OK";
-            } catch(e){}
+                document.getElementById('weatherCond').innerText = getWeatherDescription(d.current_weather.weathercode);
+            } catch(e){
+                 document.getElementById('weatherCond').innerText = "Error API";
+            }
         });
 
         function scrollToId(id) {
@@ -441,7 +502,12 @@
             if(sideBtn) sideBtn.classList.add('active');
         }
 
-        // --- 2. DATA & SYNC ENGINE (FIXED) ---
+        // --- 2. DATA & SYNC ENGINE ---
+        const PRE_BIN = '692e1fb7ae596e708f7d3ac9';
+        const PRE_KEY = '$2a$10$1.XU7L8GY.1.jM93eLuAG.TmIgUFpR9L0sFA0RaoZSC9xyEkWrKza';
+        
+        let syncCfg = {bin: PRE_BIN, key: PRE_KEY};
+        
         let appData = {
             tasks: [], fit: [], senate: [],
             subs: [
@@ -458,18 +524,8 @@
             ]
         };
 
-        const local = localStorage.getItem('alex_data_v31');
+        const local = localStorage.getItem('alex_data_v39');
         if(local) appData = JSON.parse(local);
-
-        let syncCfg = JSON.parse(localStorage.getItem('alex_cfg_v31')) || {bin:'', key:''};
-
-        function saveConfig() {
-            syncCfg.bin = document.getElementById('cfg_bin').value;
-            syncCfg.key = document.getElementById('cfg_key').value;
-            localStorage.setItem('alex_cfg_v31', JSON.stringify(syncCfg));
-            document.getElementById('syncMsg').innerText = "Conectado. Descargando datos...";
-            pullData();
-        }
 
         function showStatus(mode) {
             const dot = document.getElementById('syncIndicator');
@@ -490,9 +546,9 @@
         }
 
         function forcePush() {
-            if(!syncCfg.bin) return alert("Configura primero Bin ID y Key");
+            if(!syncCfg.bin) return alert("Error Config");
             pushData();
-            alert("Datos subidos forzosamente a la nube.");
+            alert("Forzado OK");
         }
 
         async function pullData() {
@@ -502,49 +558,37 @@
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${syncCfg.bin}/latest`, {
                     headers: { 'X-Master-Key': syncCfg.key }
                 });
-                if(!res.ok) throw new Error("Error API");
                 const json = await res.json();
-                
-                // SAFE MERGE (Prevent crash on empty bin)
-                let remote = json.record;
-                if(remote.tasks || remote.subs) { 
-                    appData = remote;
+                if(json.record && json.record.tasks !== undefined) { 
+                    appData = json.record;
                     saveLocal(false);
                     document.getElementById('syncMsg').innerText = "Sincronizado OK";
-                } else {
-                    document.getElementById('syncMsg').innerText = "Nube vacía. Usa 'Forzar Subida' si es el PC principal.";
                 }
                 showStatus('active');
-            } catch(e) { 
-                showStatus('error'); 
-                document.getElementById('syncMsg').innerText = "Error conexión. Revisa claves.";
-            }
+            } catch(e) { showStatus('error'); }
         }
 
         function saveLocal(push = true) {
-            localStorage.setItem('alex_data_v31', JSON.stringify(appData));
+            localStorage.setItem('alex_data_v39', JSON.stringify(appData));
             renderAll();
             if(push) pushData();
         }
 
-        // --- 3. RENDERIZADO ---
         function renderAll() {
-            renderTasks();
-            renderSubjects();
-            renderFit();
-            renderSenate();
+            renderTasks(); renderSubjects(); renderFit(); renderSenate();
+            renderSchedule();
         }
 
         // HORARIO
-        let week = localStorage.getItem('dem_week') || 'odd';
+        let week = localStorage.getItem('dem_week') || 'par';
         const schedule = {
             "Lunes": [
                 {t:"08:00",c:"Mec. Fluidelor (C)",p:"Stan M.",r:"T309",w:"all"},
                 {t:"10:00",c:"Teoria Prob. (C)",p:"Nistor G.",r:"T309",w:"all"},
-                {t:"12:00",c:"Comunicare (C)",p:"Balteanu",r:"I202",w:"odd"},
-                {t:"12:00",c:"Desen Tehnic (C)",p:"Popa C.",r:"T309",w:"even"},
-                {t:"14:00",c:"Economia (S)",p:"Balteanu",r:"I202",w:"odd"},
-                {t:"14:00",c:"Teoria Prob. (S)",p:"Popescu",r:"T309",w:"even"}
+                {t:"12:00",c:"Comunicare (C)",p:"Balteanu",r:"I202",w:"impar"},
+                {t:"12:00",c:"Desen Tehnic (C)",p:"Popa C.",r:"T309",w:"par"},
+                {t:"14:00",c:"Economia (S)",p:"Balteanu",r:"I202",w:"impar"},
+                {t:"14:00",c:"Teoria Prob. (S)",p:"Popescu",r:"T309",w:"par"}
             ],
             "Martes": [],
             "Miércoles": [
@@ -554,33 +598,60 @@
                 {t:"14:00",c:"Electronica (C)",p:"Visan D.",r:"C4.13",w:"all"}
             ],
             "Jueves": [
-                {t:"08:00",c:"Mec. Fluidelor (L)",p:"Stan M.",r:"I001",w:"odd"},
-                {t:"10:00",c:"Electronica (L)",p:"Visan D.",r:"T107",w:"odd"}
+                {t:"08:00",c:"Mec. Fluidelor (L)",p:"Stan M.",r:"I001",w:"impar"},
+                {t:"10:00",c:"Electronica (L)",p:"Visan D.",r:"T107",w:"impar"}
             ],
             "Viernes": [
-                {t:"08:00",c:"Mecanica II (S)",p:"Baldea M.",r:"C4.12",w:"odd"},
-                {t:"10:00",c:"Rezistenta Mat (S)",p:"Grigore J.",r:"T302",w:"odd"},
-                {t:"10:00",c:"Ed. Fizica",p:"Stancu M.",r:"Sala",w:"even"},
-                {t:"12:00",c:"Mecanica II (L)",p:"Baldea M.",r:"T115",w:"odd"},
-                {t:"12:00",c:"Rezistenta Mat (L)",p:"Grigore J.",r:"T121",w:"even"},
+                {t:"08:00",c:"Mecanica II (S)",p:"Baldea M.",r:"C4.12",w:"impar"},
+                {t:"10:00",c:"Rezistenta Mat (S)",p:"Grigore J.",r:"T302",w:"impar"},
+                {t:"10:00",c:"Ed. Fizica",p:"Stancu M.",r:"Sala",w:"par"},
+                {t:"12:00",c:"Mecanica II (L)",p:"Baldea M.",r:"T115",w:"impar"},
+                {t:"12:00",c:"Rezistenta Mat (L)",p:"Grigore J.",r:"T121",w:"par"},
                 {t:"14:00",c:"Desen Tehnic (L)",p:"Popa C.",r:"T105",w:"all"},
-                {t:"16:00",c:"Desen Tehnic (L)",p:"Popa C.",r:"T105",w:"even"}
+                {t:"16:00",c:"Desen Tehnic (L)",p:"Popa C.",r:"T105",w:"par"}
             ]
         };
 
-        function setWeek(w) { week=w; renderSchedule(); }
+        function setWeek(w) { 
+            week = w; localStorage.setItem('dem_week', w);
+            renderSchedule(); 
+        }
+
         function renderSchedule() {
             const c = document.getElementById('scheduleContainer'); c.innerHTML='';
-            document.getElementById('btnOdd').style.background = week==='odd'?'var(--gold)':'transparent';
-            document.getElementById('btnEven').style.background = week==='even'?'var(--gold)':'transparent';
-            const day = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][new Date().getDay()];
-            const classes = schedule[day] || [];
+            const today = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][new Date().getDay()];
+            const classes = schedule[today] || [];
             const active = classes.filter(cl => cl.w === 'all' || cl.w === week);
             
             if(active.length === 0) c.innerHTML = '<div style="color:#666; padding:10px;">Libre Operativo</div>';
             else active.forEach(cl => c.innerHTML += `<div class="schedule-row"><div class="time-col">${cl.t.split(' ')[0]}</div><div class="class-col"><span class="class-name">${cl.c}</span><span class="class-prof">${cl.p} • ${cl.r}</span></div></div>`);
         }
 
+        function toggleFullSchedule() {
+            const el = document.getElementById('fullScheduleContainer');
+            if(el.style.display === 'block') {
+                el.style.display = 'none';
+            } else {
+                el.style.display = 'block';
+                renderFullSchedule();
+            }
+        }
+
+        function renderFullSchedule() {
+            const grid = document.getElementById('fullScheduleGrid');
+            grid.innerHTML = '';
+            for(const [day, classes] of Object.entries(schedule)) {
+                let dayHtml = `<div class="day-col"><div class="day-head">${day}</div>`;
+                const active = classes.filter(cl => cl.w === 'all' || cl.w === week);
+                if(active.length===0) dayHtml += `<div style="font-size:0.7rem; color:#666;">Libre</div>`;
+                active.forEach(cl => {
+                    dayHtml += `<div class="fs-item"><strong style="color:var(--blue)">${cl.t.split(' ')[0]}</strong> ${cl.c}<br><span style="color:#888;">${cl.p}</span></div>`;
+                });
+                dayHtml += `</div>`;
+                grid.innerHTML += dayHtml;
+            }
+        }
+        
         // TAREAS
         function addTask() { let v = document.getElementById('taskIn').value; if(v){appData.tasks.push(v); saveLocal(); document.getElementById('taskIn').value='';} }
         function renderTasks() {
@@ -604,12 +675,13 @@
                 ["TC","LV","LAB","SEM","CUR","EX"].forEach((lbl,k) => {
                     cols += `<div class="g-col"><span class="g-lbl">${lbl}</span><input type="number" class="inp-g" value="${s.g[k]||''}" onchange="upG(${i},${k},this.value)"><input type="number" class="inp-w" value="${s.w[k]}" onchange="upW(${i},${k},this.value)"></div>`;
                 });
-                l.innerHTML += `<div class="grade-row"><div style="flex:2; font-weight:bold;">${s.n}</div><div class="grade-inputs">${cols}</div><div style="font-weight:bold; color:var(--gold); font-size:1.1rem; margin-left:10px;">${final.toFixed(2)}</div></div>`;
+                l.innerHTML += `<div class="grade-row"><div style="flex:2; font-weight:bold;">${s.n}</div><div class="grade-inputs">${cols}</div><div style="font-weight:bold; color:var(--gold); font-size:1.1rem; margin-left:10px; min-width:60px;">${final.toFixed(2)}</div><button onclick="delSubject(${i})" style="background:none; border:none; color:var(--red); font-weight:bold; cursor:pointer;">✕</button></div>`;
             });
         }
-        function upG(i,k,v){ appData.subs[i].g[k]=v; saveLocal(); }
-        function upW(i,k,v){ appData.subs[i].w[k]=v; saveLocal(); }
-        function addSubject(){ appData.subs.push({n:"Nueva",g:[],w:[10,10,20,10,0,50]}); saveLocal(); }
+        function upG(i,k,v) { appData.subs[i].g[k]=v; saveLocal(); }
+        function upW(i,k,v) { appData.subs[i].w[k]=v; saveLocal(); }
+        function addSubject(){ appData.subs.push({n:"Nueva",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]}); saveLocal(); }
+        function delSubject(i){ appData.subs.splice(i,1); saveLocal(); }
 
         // FITNESS
         function addFitLog() {
@@ -628,8 +700,11 @@
                 let sumM=0, cM=Math.min(appData.fit.length,30); for(let i=0;i<cM;i++) sumM+=parseFloat(appData.fit[i].w);
                 document.getElementById('avgMonthW').innerText = (sumM/cM).toFixed(1) + ' kg';
             }
-            appData.fit.slice(0,5).forEach(r => b.innerHTML += `<tr><td>${r.d}</td><td>${r.w}</td><td>${r.f}</td><td>${r.e}</td></tr>`);
+            appData.fit.slice(0,5).forEach((r, idx) => {
+                b.innerHTML += `<tr><td>${r.d}</td><td>${r.w}</td><td>${r.f}</td><td>${r.e}</td><td><span style="color:red; cursor:pointer;" onclick="delFit(${idx})">✕</span></td></tr>`;
+            });
         }
+        function delFit(i) { appData.fit.splice(i,1); saveLocal(); }
 
         // SENADO
         function addSenate() { let v = document.getElementById('senateIn').value; if(v){appData.senate.push(v); saveLocal(); document.getElementById('senateIn').value='';} }
@@ -640,13 +715,11 @@
         function delSen(i) { appData.senate.splice(i,1); saveLocal(); }
 
         // INIT
+        document.getElementById('cfg_bin').value = syncCfg.bin;
+        document.getElementById('cfg_key').value = syncCfg.key;
         setWeek(week);
-        document.getElementById('cfg_bin').value = syncConfig.bin;
-        document.getElementById('cfg_key').value = syncConfig.key;
         renderAll();
         pullData();
-
     </script>
 </body>
-
 </html>
