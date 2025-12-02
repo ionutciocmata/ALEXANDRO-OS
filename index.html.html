@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ALEXANDRO OS</title>
+    <style>
+        /* --- 1. CORE VISUAL --- */
+        :root {
+            --glass: rgba(18, 18, 18, 0.85);
+            --glass-card: rgba(30, 30, 30, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --blur: blur(25px);
+            --gold: #D4AF37;
+            --blue: #2979ff;
+            --green: #00e676;
+            --red: #ff1744;
+            --text: #ffffff;
+            --dim: #aaaaaa;
+            --font: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            font-family: var(--font); color: var(--text); background: #000;
+        }
+
+        /* FONDO AESTHETIC FIJO */
+        .bg-fixed {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            background-image: url('https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=2074&auto=format&fit=crop'); 
+            background-size: cover; background-position: center;
+        }
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.95)); 
+            z-index: -1;
+        }
+
+        /* --- 2. LAYOUT --- */
+        .app-container { display: flex; height: 100%; width: 100%; }
+
+        .sidebar {
+            width: 280px; height: 100%; display: none; flex-direction: column; padding: 30px 20px;
+            background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(255,255,255,0.05); z-index: 100;
+        }
+
+        .main-content {
+            flex: 1; overflow-y: auto; padding: 20px; position: relative;
+            scroll-behavior: smooth;
+        }
+
+        /* SECCIONES */
+        .section { margin-bottom: 60px; scroll-margin-top: 100px; /* Ajuste para cabecera fija */ }
+
+        /* TARJETAS GLASS */
+        .glass-card {
+            background: var(--glass-card); backdrop-filter: var(--blur);
+            border: 1px solid var(--glass-border); border-radius: 16px;
+            padding: 20px; margin-bottom: 20px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        h2 { 
+            font-size: 0.9rem; color: var(--gold); margin: 0 0 15px 0; 
+            text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); 
+            padding-bottom: 8px; display: flex; justify-content: space-between; letter-spacing: 1px;
+        }
+
+        /* --- 3. BARRA DE ESTADO (HUD) --- */
+        .status-hud {
+            position: sticky; top: 0; z-index: 50; margin-bottom: 30px;
+            background: rgba(15, 15, 15, 0.8); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 16px;
+            padding: 10px 20px; display: grid; grid-template-columns: auto 1fr auto;
+            align-items: center; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .hud-left { display: flex; align-items: center; gap: 15px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; }
+        .hud-time { font-size: 1.8rem; font-weight: 800; line-height: 1; color: white; font-variant-numeric: tabular-nums; }
+        .hud-date { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; font-weight: bold; line-height: 1.2; }
+
+        .hud-center { display: flex; flex-direction: column; justify-content: center; }
+        .hud-weather-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #ddd; }
+        .hud-loc { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+
+        .hud-right { text-align: right; min-width: 200px; }
+        .hud-label { font-size: 0.65rem; color: var(--blue); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+        .hud-event { font-size: 0.9rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
+        .hud-sub { font-size: 0.7rem; color: #888; }
+
+        /* SYNC INDICATOR DOT */
+        .sync-dot {
+            width: 10px; height: 10px; border-radius: 50%; background: #333; 
+            margin-left: 10px; display: inline-block; box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            transition: 0.3s;
+        }
+        .sync-dot.active { background: var(--green); box-shadow: 0 0 10px var(--green); }
+        .sync-dot.working { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+        .sync-dot.error { background: var(--red); box-shadow: 0 0 10px var(--red); }
+
+        /* --- 4. COMPONENTES --- */
+        .btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            color: white; padding: 12px; border-radius: 8px; cursor: pointer;
+            width: 100%; font-weight: 600; text-align: center; display: flex; 
+            align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
+        }
+        .btn:hover { background: rgba(255,255,255,0.15); border-color: white; }
+        .btn-gold { background: var(--gold); color: black; border: none; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2); }
+        .btn-gold:hover { background: #f0d56a; transform: translateY(-2px); }
+        
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
+        .team-card {
+            background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 12px;
+            padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+            text-decoration: none; color: white; transition: 0.2s;
+        }
+        .team-card:hover { border-color: var(--gold); background: rgba(255,255,255,0.05); }
+        .team-logo { width: 45px; height: 45px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        .team-name { font-size: 0.65rem; font-weight: bold; text-align: center; text-transform: uppercase; }
+
+        .ai-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .ai-card {
+            background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 12px;
+            padding: 15px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center;
+            text-decoration: none; color: white; transition: 0.2s;
+        }
+        .ai-card:hover { border-color: var(--gold); background: rgba(255,255,255,0.05); }
+        .ai-icon { font-size: 1.8rem; margin-bottom: 5px; }
+        .ai-label { font-size: 0.75rem; font-weight: bold; }
+
+        .nexus-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+        .nexus-btn {
+            background: linear-gradient(145deg, #1a1a1a, #0d0d0d); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 20px; text-align: center; color: white; text-decoration: none;
+            display: flex; flex-direction: column; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .nexus-btn:hover { border-color: var(--gold); transform: translateY(-3px); }
+
+        input, select, textarea { 
+            width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #444; 
+            color: white; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 0.9rem;
+        }
+        input:focus { border-color: var(--gold); }
+
+        .nav-btn-side { 
+            width: 100%; background: transparent; border: none; text-align: left;
+            padding: 15px; color: #ccc; border-radius: 10px; margin-bottom: 5px; 
+            display: flex; align-items: center; gap: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; 
+            font-size: 0.9rem; font-family: inherit; text-transform: uppercase;
+        }
+        .nav-btn-side:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-btn-side.active { border-left: 3px solid var(--gold); background: linear-gradient(90deg, rgba(212,175,55,0.15), transparent); color: var(--gold); }
+
+        .mobile-nav {
+            position: fixed; bottom: 0; width: 100%; height: 75px;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(20px);
+            border-top: 1px solid #333; display: none; z-index: 999;
+        }
+        .mob-btn { flex: 1; background: none; border: none; color: #666; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .mob-btn.active { color: var(--gold); }
+        .mob-icon { font-size: 1.4rem; }
+
+        @media (min-width: 800px) { .sidebar { display: flex; } .scroll-zone { padding: 40px; max-width: 1200px; margin: 0 auto; } }
+        @media (max-width: 799px) { .mobile-nav { display: flex; } .scroll-zone { padding-bottom: 90px; } .status-hud { grid-template-columns: 1fr; gap: 10px; text-align: center; } .hud-left, .hud-right { border: none; text-align: center; justify-content: center; } }
+
+        .grade-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; }
+        .grade-inputs { flex: 4; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+        .g-col { display: flex; flex-direction: column; align-items: center; }
+        .g-lbl { font-size: 0.55rem; color: #888; margin-bottom: 2px; }
+        .inp-g { width: 100%; text-align: center; padding: 5px; background: #000; border: 1px solid #333; font-size: 0.9rem; color: white; }
+        .inp-w { width: 100%; text-align: center; background: transparent; border: none; color: var(--gold); font-size: 0.7rem; }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
+        .data-table th { text-align: left; color: #888; border-bottom: 1px solid #444; padding: 8px; font-size: 0.75rem; }
+        .data-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+    </style>
+</head>
+<body>
+
+    <div class="bg-fixed"></div>
+    <div class="bg-overlay"></div>
+
+    <div class="app-container">
+        
+        <aside class="sidebar">
+            <div style="margin-bottom:40px; padding-left:15px;">
+                <div style="font-size:1.4rem; font-weight:800; color:var(--gold); letter-spacing:1px;">ALEXANDRO OS</div>
+                <div style="font-size:0.7rem; color:white; opacity:0.5; letter-spacing:2px; margin-top:5px;">V31 SYNC FIX</div>
+            </div>
+            <button class="nav-btn-side active" onclick="scrollToId('home')"><span>📅</span> DASHBOARD</button>
+            <button class="nav-btn-side" onclick="scrollToId('uni')"><span>🎓</span> ACADEMIA</button>
+            <button class="nav-btn-side" onclick="scrollToId('fisico')"><span>💪</span> ING. CORPORAL</button>
+            <button class="nav-btn-side" onclick="scrollToId('ai')"><span>🧠</span> IA GOD MODE</button>
+            <button class="nav-btn-side" onclick="scrollToId('nexus')"><span>🌐</span> NEXUS LINKS</button>
+            <button class="nav-btn-side" onclick="scrollToId('sports')"><span>⚽</span> DEPORTES</button>
+            <button class="nav-btn-side" onclick="scrollToId('senado')"><span>🏛️</span> SENADO</button>
+            <button class="nav-btn-side" onclick="scrollToId('sync')" style="color:var(--blue); border:1px solid rgba(41,121,255,0.2);"><span>☁️</span> CLOUD SYNC</button>
+        </aside>
+
+        <main class="main-content">
+            
+            <div class="status-hud">
+                <div class="hud-left">
+                    <div class="hud-time" id="clock">00:00</div>
+                    <div style="display:flex; flex-direction:column;">
+                        <span class="hud-date" id="date">--</span>
+                        <span class="hud-date" id="year" style="color:#666">2025</span>
+                    </div>
+                </div>
+                <div class="hud-center">
+                    <div class="hud-weather-row">
+                        <span style="font-size:1.2rem;">⛅</span>
+                        <span id="weatherTemp" style="font-weight:bold; color:white;">--°C</span>
+                        <span id="weatherCond" style="color:#aaa;">Cargando...</span>
+                    </div>
+                    <div class="hud-loc">📍 <span id="locText">LOCALIZANDO...</span></div>
+                </div>
+                <div class="hud-right">
+                    <div class="hud-label">ESTADO <div class="sync-dot" id="syncIndicator"></div></div>
+                    <div class="hud-event" id="nextEvent">Sin eventos</div>
+                    <div class="hud-sub" id="nextEventTime">--:--</div>
+                </div>
+            </div>
+
+            <div id="home" class="section">
+                <div class="glass-card" style="border-left: 4px solid var(--gold); display:flex; align-items:center; gap:20px;">
+                    <div style="font-size:2rem;">🚌</div>
+                    <div>
+                        <strong style="color:var(--gold); display:block; margin-bottom:2px;" id="transportTitle">--</strong>
+                        <span style="color:#ccc; font-size:0.85rem;" id="transportDesc">--</span>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <h2>
+                        HORARIO UPIT
+                        <div style="display:flex; gap:5px;">
+                            <button onclick="setWeek('odd')" class="btn-sm btn-gold" id="btnOdd" style="padding:4px 10px; font-size:0.75rem;">IMPAR</button>
+                            <button onclick="setWeek('even')" class="btn-sm btn" id="btnEven" style="padding:4px 10px; font-size:0.75rem; background:transparent; border:1px solid #555;">PAR</button>
+                        </div>
+                    </h2>
+                    <div id="scheduleContainer"></div>
+                </div>
+                <div class="glass-card">
+                    <h2>MISIONES DIARIAS</h2>
+                    <div id="taskList"></div>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <input type="text" id="taskIn" placeholder="Nueva misión...">
+                        <button class="btn-gold" style="width:auto; padding:0 25px; border-radius:6px;" onclick="addTask()">ADD</button>
+                    </div>
+                    <button class="btn" style="margin-top:10px;" onclick="aiPlan()">🤖 ASISTENTE IA: PLAN DEL DÍA</button>
+                </div>
+                <div class="glass-card">
+                    <h2>AGENDA MENSUAL</h2>
+                    <div style="height:500px; border-radius:8px; overflow:hidden; background:rgba(0,0,0,0.5);">
+                        <iframe src="https://calendar.google.com/calendar/embed?src=ia.ciocmata%40gmail.com&ctz=Europe%2FBucharest&mode=MONTH&bgcolor=%23000000&showTitle=0&showPrint=0&showTabs=1&showCalendars=0" style="border:0; width:100%; height:100%;"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <div id="uni" class="section">
+                <h1>Academia</h1>
+                <div class="glass-card">
+                    <h2>PORTALES UPIT</h2>
+                    <div class="nexus-grid">
+                        <a href="https://studenti.pub.ro/index.php" target="_blank" class="nexus-btn"><span style="font-size:2rem;">🎓</span><span style="font-size:0.8rem; font-weight:bold;">UPB STUDENȚI</span></a>
+                        <a href="https://learn.upit.ro/my/courses.php" target="_blank" class="nexus-btn"><span style="font-size:2rem;">📚</span><span style="font-size:0.8rem; font-weight:bold;">E-LEARNING</span></a>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <h2>CALCULADORA DE INGENIERÍA</h2>
+                    <p style="font-size:0.8rem; color:#aaa; margin-bottom:15px;">Nota (Arriba) | % Peso (Abajo)</p>
+                    <div id="subjectsList"></div>
+                    <button class="btn" style="margin-top:15px;" onclick="addSubject()">+ AÑADIR MATERIA</button>
+                </div>
+            </div>
+
+            <div id="fisico" class="section">
+                <h1>Ingeniería Corporal</h1>
+                <div class="glass-card">
+                    <div style="display:flex; justify-content:space-between; text-align:center;">
+                        <div><span style="font-size:0.7rem; color:#aaa;">ACTUAL</span><div style="font-size:1.5rem; font-weight:bold; color:white;" id="currentW">--</div></div>
+                        <div><span style="font-size:0.7rem; color:#aaa;">MEDIA SEM</span><div style="font-size:1.5rem; font-weight:bold; color:var(--blue);" id="avgWeekW">--</div></div>
+                        <div><span style="font-size:0.7rem; color:#aaa;">MEDIA MES</span><div style="font-size:1.5rem; font-weight:bold; color:var(--gold);" id="avgMonthW">--</div></div>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <h2>PROTOCOLOS</h2>
+                    <div class="nexus-grid">
+                        <a href="https://www.youtube.com/watch?v=VecbXgT0JGM" target="_blank" class="nexus-btn"><span style="font-size:1.5rem;">🧘</span><span>ACTIVACIÓN (15')</span></a>
+                        <a href="https://www.youtube.com/results?search_query=full+body+hypertrophy+workout" target="_blank" class="nexus-btn"><span style="font-size:1.5rem;">🏋️</span><span>FUERZA TARDE</span></a>
+                        <a href="https://www.youtube.com/watch?v=ml6cT4AZdqI" target="_blank" class="nexus-btn"><span style="font-size:1.5rem;">🏃</span><span>CARDIO HIIT</span></a>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <h2>REGISTRO DIARIO</h2>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:10px; margin-bottom:15px;">
+                        <input type="number" id="logW" placeholder="Kg" step="0.1">
+                        <select id="logF"><option value="✅">Cena OK</option><option value="❌">Fallo</option></select>
+                        <select id="logE"><option value="🏋️">Pesas</option><option value="🧘">Mov</option></select>
+                        <button class="btn-gold" style="width:50px;" onclick="addFitLog()">💾</button>
+                    </div>
+                    <table class="data-table">
+                        <thead><tr><th>FECHA</th><th>PESO</th><th>AYUNO</th><th>ENTRENO</th></tr></thead>
+                        <tbody id="fitLogBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="ai" class="section">
+                <h1>Motores de Inteligencia</h1>
+                <div class="ai-grid">
+                    <a href="https://gemini.google.com/" target="_blank" class="ai-card"><span class="ai-icon">✨</span><span class="ai-label">GEMINI</span></a>
+                    <a href="https://chat.openai.com/" target="_blank" class="ai-card"><span class="ai-icon">🤖</span><span class="ai-label">CHATGPT</span></a>
+                    <a href="https://www.perplexity.ai/" target="_blank" class="ai-card"><span class="ai-icon">🔍</span><span class="ai-label">PERPLEXITY</span></a>
+                    <a href="https://notebooklm.google.com/" target="_blank" class="ai-card"><span class="ai-icon">📓</span><span class="ai-label">NOTEBOOKLM</span></a>
+                    <a href="https://prezi.com/" target="_blank" class="ai-card"><span class="ai-icon">📽️</span><span class="ai-label">PREZI</span></a>
+                    <a href="https://claude.ai/" target="_blank" class="ai-card"><span class="ai-icon">🧠</span><span class="ai-label">CLAUDE</span></a>
+                    <a href="https://gamma.app/" target="_blank" class="ai-card"><span class="ai-icon">📊</span><span class="ai-label">GAMMA</span></a>
+                    <a href="https://github.com/features/copilot" target="_blank" class="ai-card"><span class="ai-icon">💻</span><span class="ai-label">COPILOT</span></a>
+                </div>
+            </div>
+
+            <div id="nexus" class="section">
+                <h1>Nexus</h1>
+                <div class="glass-card">
+                    <h2>COMUNICACIONES</h2>
+                    <div class="nexus-grid">
+                        <a href="https://outlook.office.com/mail/" target="_blank" class="nexus-btn"><span style="color:#0078d4; font-size:1.5rem;">📧</span>OUTLOOK UNI</a>
+                        <a href="https://mail.google.com/mail/u/?authuser=ia.ciocmata@gmail.com" target="_blank" class="nexus-btn"><span style="color:#ea4335; font-size:1.5rem;">📩</span>GMAIL PERS.</a>
+                        <a href="https://mail.google.com/mail/u/?authuser=ubisoftascreed@gmail.com" target="_blank" class="nexus-btn"><span style="color:#fbbc04; font-size:1.5rem;">🎮</span>GMAIL JUEGOS</a>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <h2>CARRERA</h2>
+                    <div class="nexus-grid">
+                        <a href="https://www.linkedin.com/jobs/search/?keywords=internship&location=Pitesti" target="_blank" class="nexus-btn"><span style="color:#0a66c2; font-size:1.5rem;">🏭</span>PITEȘTI JOBS</a>
+                        <a href="https://www.linkedin.com/jobs/search/?keywords=formula%201%20engineering" target="_blank" class="nexus-btn"><span style="color:var(--red); font-size:1.5rem;">🏎️</span>F1 JOBS</a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sports" class="section">
+                <h1>Inteligencia Deportiva</h1>
+                <div class="glass-card">
+                    <h2>MIS EQUIPOS</h2>
+                    <div class="team-grid">
+                        <a href="https://www.google.com/search?q=FC+Barcelona+partidos" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg" class="team-logo"><span class="team-name">BARÇA</span></a>
+                        <a href="https://www.google.com/search?q=Real+Madrid+partidos" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg" class="team-logo"><span class="team-name">MADRID</span></a>
+                        <a href="https://www.google.com/search?q=FCSB+meciuri" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/e/e3/FCSB_logo.svg/180px-FCSB_logo.svg.png" class="team-logo"><span class="team-name">FCSB</span></a>
+                        <a href="https://www.google.com/search?q=Nationala+Romaniei+fotbal" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/fr/thumb/9/94/%C3%89quipe_de_Roumanie_de_football_%28logo%29.svg/150px-%C3%89quipe_de_Roumanie_de_football_%28logo%29.svg.png" class="team-logo"><span class="team-name">ROMÂNIA</span></a>
+                        <a href="https://www.google.com/search?q=Seleccion+Espanola+futbol" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/31/Spain_National_Football_Team_badge.png/150px-Spain_National_Football_Team_badge.png" class="team-logo"><span class="team-name">ESPAÑA</span></a>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <h2>COMPETICIONES</h2>
+                    <div class="team-grid">
+                        <a href="https://www.google.com/search?q=Clasificacion+La+Liga" target="_blank" class="team-card"><img src="https://assets.laliga.com/assets/public/ligas/laliga-ea-sports/active/logos/laliga-ea-sports-h-w.svg" class="team-logo"><span class="team-name">LA LIGA</span></a>
+                        <a href="https://www.google.com/search?q=Clasificacion+Liga+1+Romania" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/SuperLiga_Romania_logo.png/180px-SuperLiga_Romania_logo.png" class="team-logo"><span class="team-name">SUPERLIGA</span></a>
+                        <a href="https://www.google.com/search?q=Champions+League+partidos" target="_blank" class="team-card"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/UEFA_Champions_League_logo.svg/180px-UEFA_Champions_League_logo.svg.png" class="team-logo"><span class="team-name">UCL</span></a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="senado" class="section">
+                <h1>Senado</h1>
+                <div class="glass-card">
+                    <h2>LOG DE SESIONES</h2>
+                    <div id="senateLog"></div>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <input type="text" id="senateIn" placeholder="Tema tratado...">
+                        <button class="btn-gold" style="width:auto;" onclick="addSenate()">Guardar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sync" class="section">
+                <div class="glass-card" style="border-left: 4px solid var(--blue);">
+                    <h2>☁️ CONFIGURACIÓN NUBE</h2>
+                    <p style="font-size:0.8rem; color:#aaa; margin-bottom:15px;">Conecta JSONBin.io para sincronizar automáticamente.</p>
+                    <input type="text" id="cfg_bin" placeholder="Bin ID (ej: 65d4...)" style="margin-bottom:10px;">
+                    <input type="password" id="cfg_key" placeholder="API Key (X-Master-Key)" style="margin-bottom:10px;">
+                    <button class="btn-gold" onclick="saveConfig()">CONECTAR Y SINCRONIZAR</button>
+                    <button class="btn" onclick="forcePush()" style="margin-top:10px; border-color:var(--green); color:var(--green);">FORZAR SUBIDA INICIAL (PC)</button>
+                    <p id="syncMsg" style="font-size:0.7rem; margin-top:10px; color:var(--green);"></p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <nav class="mobile-nav">
+        <button class="mob-btn active" onclick="scrollToId('home')"><span class="mob-icon">📅</span></button>
+        <button class="mob-btn" onclick="scrollToId('uni')"><span class="mob-icon">🎓</span></button>
+        <button class="mob-btn" onclick="scrollToId('nexus')"><span class="mob-icon">🌐</span></button>
+        <button class="mob-btn" onclick="scrollToId('fisico')"><span class="mob-icon">💪</span></button>
+        <button class="mob-btn" onclick="scrollToId('sync')"><span class="mob-icon">☁️</span></button>
+    </nav>
+
+    <script>
+        // --- 1. SYSTEM CLOCK & HEADER ---
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+            document.getElementById('date').innerText = now.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'short'});
+            document.getElementById('year').innerText = now.getFullYear();
+            
+            // Transport Alert
+            const day = now.getDay();
+            if(day === 2) { 
+                document.getElementById('transportTitle').innerText = "BASE"; 
+                document.getElementById('transportDesc').innerText = "Sin viajes";
+            } else if(day === 0) {
+                document.getElementById('transportTitle').innerText = "07:30"; 
+                document.getElementById('transportDesc').innerText = "Rosquillas";
+            } else {
+                document.getElementById('transportTitle').innerText = "SALIDA 06:45"; 
+                document.getElementById('transportDesc').innerText = "Maxitaxi 07:00";
+            }
+        }, 1000);
+
+        navigator.geolocation.getCurrentPosition(async p => {
+            try {
+                document.getElementById('locText').innerText = "PITEȘTI";
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${p.coords.latitude}&longitude=${p.coords.longitude}&current_weather=true`);
+                const d = await res.json();
+                document.getElementById('weatherTemp').innerText = Math.round(d.current_weather.temperature) + "°C";
+                document.getElementById('weatherCond').innerText = "Clima OK";
+            } catch(e){}
+        });
+
+        function scrollToId(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+            document.querySelectorAll('.nav-btn-side, .mob-btn').forEach(b => b.classList.remove('active'));
+            const sideBtn = document.querySelector(`.nav-btn-side[onclick="scrollToId('${id}')"]`);
+            if(sideBtn) sideBtn.classList.add('active');
+        }
+
+        // --- 2. DATA & SYNC ENGINE (FIXED) ---
+        let appData = {
+            tasks: [], fit: [], senate: [],
+            subs: [
+                {n:"Mecanica Fluidelor",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]},
+                {n:"Teoria Probabilităților",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]},
+                {n:"Comunicare",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]},
+                {n:"Desen Tehnic III",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]},
+                {n:"Economia",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]},
+                {n:"Mecanica II",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]},
+                {n:"Limba Engleză III",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]},
+                {n:"Rezistența Materialelor I",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]},
+                {n:"Electronică și Automatizări",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]},
+                {n:"Educație Fizică",g:[0,0,0,0,0,0],w:[10,10,20,10,0,50]}
+            ]
+        };
+
+        const local = localStorage.getItem('alex_data_v31');
+        if(local) appData = JSON.parse(local);
+
+        let syncCfg = JSON.parse(localStorage.getItem('alex_cfg_v31')) || {bin:'', key:''};
+
+        function saveConfig() {
+            syncCfg.bin = document.getElementById('cfg_bin').value;
+            syncCfg.key = document.getElementById('cfg_key').value;
+            localStorage.setItem('alex_cfg_v31', JSON.stringify(syncCfg));
+            document.getElementById('syncMsg').innerText = "Conectado. Descargando datos...";
+            pullData();
+        }
+
+        function showStatus(mode) {
+            const dot = document.getElementById('syncIndicator');
+            dot.className = 'sync-dot ' + mode;
+        }
+
+        async function pushData() {
+            if(!syncCfg.bin) return;
+            showStatus('working');
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${syncCfg.bin}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': syncCfg.key },
+                    body: JSON.stringify(appData)
+                });
+                showStatus('active');
+            } catch(e) { showStatus('error'); }
+        }
+
+        function forcePush() {
+            if(!syncCfg.bin) return alert("Configura primero Bin ID y Key");
+            pushData();
+            alert("Datos subidos forzosamente a la nube.");
+        }
+
+        async function pullData() {
+            if(!syncCfg.bin) return;
+            showStatus('working');
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${syncCfg.bin}/latest`, {
+                    headers: { 'X-Master-Key': syncCfg.key }
+                });
+                if(!res.ok) throw new Error("Error API");
+                const json = await res.json();
+                
+                // SAFE MERGE (Prevent crash on empty bin)
+                let remote = json.record;
+                if(remote.tasks || remote.subs) { 
+                    appData = remote;
+                    saveLocal(false);
+                    document.getElementById('syncMsg').innerText = "Sincronizado OK";
+                } else {
+                    document.getElementById('syncMsg').innerText = "Nube vacía. Usa 'Forzar Subida' si es el PC principal.";
+                }
+                showStatus('active');
+            } catch(e) { 
+                showStatus('error'); 
+                document.getElementById('syncMsg').innerText = "Error conexión. Revisa claves.";
+            }
+        }
+
+        function saveLocal(push = true) {
+            localStorage.setItem('alex_data_v31', JSON.stringify(appData));
+            renderAll();
+            if(push) pushData();
+        }
+
+        // --- 3. RENDERIZADO ---
+        function renderAll() {
+            renderTasks();
+            renderSubjects();
+            renderFit();
+            renderSenate();
+        }
+
+        // HORARIO
+        let week = localStorage.getItem('dem_week') || 'odd';
+        const schedule = {
+            "Lunes": [
+                {t:"08:00",c:"Mec. Fluidelor (C)",p:"Stan M.",r:"T309",w:"all"},
+                {t:"10:00",c:"Teoria Prob. (C)",p:"Nistor G.",r:"T309",w:"all"},
+                {t:"12:00",c:"Comunicare (C)",p:"Balteanu",r:"I202",w:"odd"},
+                {t:"12:00",c:"Desen Tehnic (C)",p:"Popa C.",r:"T309",w:"even"},
+                {t:"14:00",c:"Economia (S)",p:"Balteanu",r:"I202",w:"odd"},
+                {t:"14:00",c:"Teoria Prob. (S)",p:"Popescu",r:"T309",w:"even"}
+            ],
+            "Martes": [],
+            "Miércoles": [
+                {t:"08:00",c:"Mecanica II (C)",p:"Baldea M.",r:"C4.13",w:"all"},
+                {t:"10:00",c:"Engleza (S)",p:"Costeleanu",r:"C4.12",w:"all"},
+                {t:"12:00",c:"Rezistenta Mat (C)",p:"Grigore J.",r:"C4.13",w:"all"},
+                {t:"14:00",c:"Electronica (C)",p:"Visan D.",r:"C4.13",w:"all"}
+            ],
+            "Jueves": [
+                {t:"08:00",c:"Mec. Fluidelor (L)",p:"Stan M.",r:"I001",w:"odd"},
+                {t:"10:00",c:"Electronica (L)",p:"Visan D.",r:"T107",w:"odd"}
+            ],
+            "Viernes": [
+                {t:"08:00",c:"Mecanica II (S)",p:"Baldea M.",r:"C4.12",w:"odd"},
+                {t:"10:00",c:"Rezistenta Mat (S)",p:"Grigore J.",r:"T302",w:"odd"},
+                {t:"10:00",c:"Ed. Fizica",p:"Stancu M.",r:"Sala",w:"even"},
+                {t:"12:00",c:"Mecanica II (L)",p:"Baldea M.",r:"T115",w:"odd"},
+                {t:"12:00",c:"Rezistenta Mat (L)",p:"Grigore J.",r:"T121",w:"even"},
+                {t:"14:00",c:"Desen Tehnic (L)",p:"Popa C.",r:"T105",w:"all"},
+                {t:"16:00",c:"Desen Tehnic (L)",p:"Popa C.",r:"T105",w:"even"}
+            ]
+        };
+
+        function setWeek(w) { week=w; renderSchedule(); }
+        function renderSchedule() {
+            const c = document.getElementById('scheduleContainer'); c.innerHTML='';
+            document.getElementById('btnOdd').style.background = week==='odd'?'var(--gold)':'transparent';
+            document.getElementById('btnEven').style.background = week==='even'?'var(--gold)':'transparent';
+            const day = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][new Date().getDay()];
+            const classes = schedule[day] || [];
+            const active = classes.filter(cl => cl.w === 'all' || cl.w === week);
+            
+            if(active.length === 0) c.innerHTML = '<div style="color:#666; padding:10px;">Libre Operativo</div>';
+            else active.forEach(cl => c.innerHTML += `<div class="schedule-row"><div class="time-col">${cl.t.split(' ')[0]}</div><div class="class-col"><span class="class-name">${cl.c}</span><span class="class-prof">${cl.p} • ${cl.r}</span></div></div>`);
+        }
+
+        // TAREAS
+        function addTask() { let v = document.getElementById('taskIn').value; if(v){appData.tasks.push(v); saveLocal(); document.getElementById('taskIn').value='';} }
+        function renderTasks() {
+            const l = document.getElementById('taskList'); l.innerHTML = '';
+            document.getElementById('nextEvent').innerText = appData.tasks.length > 0 ? appData.tasks[0] : "Sin misiones";
+            document.getElementById('nextEventTime').innerText = "PENDIENTE";
+            appData.tasks.forEach((t, i) => l.innerHTML += `<div style="padding:10px; border-bottom:1px solid #333; display:flex; justify-content:space-between;"><span>${t}</span><span style="color:var(--red); cursor:pointer;" onclick="delTask(${i})">✕</span></div>`);
+        }
+        function delTask(i) { appData.tasks.splice(i,1); saveLocal(); }
+        function aiPlan() {
+            const p = `Actúa como mi asistente. Mis tareas son: ${appData.tasks.join(', ')}. Organiza mi día.`;
+            navigator.clipboard.writeText(p); alert("Orden copiada.");
+        }
+
+        // CALCULADORA
+        function renderSubjects() {
+            const l = document.getElementById('subjectsList'); l.innerHTML = '';
+            appData.subs.forEach((s, i) => {
+                let final = 0; s.w.forEach((w,k) => { if(w>0) final += (s.g[k]||0)*(w/100); });
+                let cols = '';
+                ["TC","LV","LAB","SEM","CUR","EX"].forEach((lbl,k) => {
+                    cols += `<div class="g-col"><span class="g-lbl">${lbl}</span><input type="number" class="inp-g" value="${s.g[k]||''}" onchange="upG(${i},${k},this.value)"><input type="number" class="inp-w" value="${s.w[k]}" onchange="upW(${i},${k},this.value)"></div>`;
+                });
+                l.innerHTML += `<div class="grade-row"><div style="flex:2; font-weight:bold;">${s.n}</div><div class="grade-inputs">${cols}</div><div style="font-weight:bold; color:var(--gold); font-size:1.1rem; margin-left:10px;">${final.toFixed(2)}</div></div>`;
+            });
+        }
+        function upG(i,k,v){ appData.subs[i].g[k]=v; saveLocal(); }
+        function upW(i,k,v){ appData.subs[i].w[k]=v; saveLocal(); }
+        function addSubject(){ appData.subs.push({n:"Nueva",g:[],w:[10,10,20,10,0,50]}); saveLocal(); }
+
+        // FITNESS
+        function addFitLog() {
+            let w = document.getElementById('logW').value;
+            if(w) {
+                appData.fit.unshift({d:new Date().toLocaleDateString(), w:w, f:document.getElementById('logF').value, e:document.getElementById('logE').value});
+                saveLocal();
+            }
+        }
+        function renderFit() {
+            const b = document.getElementById('fitLogBody'); b.innerHTML='';
+            if(appData.fit.length > 0) {
+                document.getElementById('currentW').innerText = appData.fit[0].w + ' kg';
+                let sumW=0, c=Math.min(appData.fit.length,7); for(let i=0;i<c;i++) sumW+=parseFloat(appData.fit[i].w);
+                document.getElementById('avgWeekW').innerText = (sumW/c).toFixed(1) + ' kg';
+                let sumM=0, cM=Math.min(appData.fit.length,30); for(let i=0;i<cM;i++) sumM+=parseFloat(appData.fit[i].w);
+                document.getElementById('avgMonthW').innerText = (sumM/cM).toFixed(1) + ' kg';
+            }
+            appData.fit.slice(0,5).forEach(r => b.innerHTML += `<tr><td>${r.d}</td><td>${r.w}</td><td>${r.f}</td><td>${r.e}</td></tr>`);
+        }
+
+        // SENADO
+        function addSenate() { let v = document.getElementById('senateIn').value; if(v){appData.senate.push(v); saveLocal(); document.getElementById('senateIn').value='';} }
+        function renderSenate() {
+            const d = document.getElementById('senateLog'); d.innerHTML='';
+            appData.senate.forEach((s,i) => d.innerHTML += `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between;"><span>${s}</span><span style="color:var(--red); cursor:pointer;" onclick="delSen(${i})">✕</span></div>`);
+        }
+        function delSen(i) { appData.senate.splice(i,1); saveLocal(); }
+
+        // INIT
+        setWeek(week);
+        document.getElementById('cfg_bin').value = syncConfig.bin;
+        document.getElementById('cfg_key').value = syncConfig.key;
+        renderAll();
+        pullData();
+
+    </script>
+</body>
+</html>
