@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TASKLY OS PRO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- 1. CORE VISUAL SYSTEM --- */
+        :root {
+            --primary: #2979ff; 
+            --bg-dark: #050505;
+            --bg-panel: rgba(20, 20, 20, 0.75);
+            --bg-card: rgba(30, 30, 30, 0.45);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --blur: blur(20px);
+            --font: 'Inter', sans-serif;
+            --radius: 14px;
+            --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-dark: #f0f2f5; --bg-panel: rgba(255, 255, 255, 0.9); --bg-card: rgba(255, 255, 255, 0.65);
+            --text-main: #111; --text-dim: #666; --border: rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; height: 100vh; overflow: hidden; font-family: var(--font); background: var(--bg-dark); color: var(--text-main); transition: background 0.3s, color 0.3s; }
+
+        /* TECH BACKGROUND */
+        .tech-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            background-image: linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+            background-size: 40px 40px; opacity: 0.2; pointer-events: none;
+        }
+
+        /* --- 2. LAYOUT --- */
+        .app-container { display: flex; width: 100%; height: 100%; }
+        .sidebar { width: 260px; background: var(--bg-panel); backdrop-filter: var(--blur); border-right: 1px solid var(--border); display: none; flex-direction: column; padding: 20px; z-index: 100; }
+        .main-content { flex: 1; overflow-y: auto; padding: 20px; position: relative; scroll-behavior: smooth; }
+
+        /* COMPONENTS */
+        .glass-card {
+            background: var(--bg-card); backdrop-filter: var(--blur); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--glass-shadow);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .glass-card:hover { border-color: var(--primary); }
+
+        h1 { font-size: 1.5rem; font-weight: 800; margin: 0 0 20px 0; letter-spacing: -0.5px; color: var(--text-main); }
+        h2 { 
+            font-size: 0.8rem; color: var(--primary); margin: 0 0 15px 0; 
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* --- 3. HUD & WIDGETS --- */
+        .hud-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .hud-widget {
+            background: var(--bg-panel); padding: 15px; border-radius: var(--radius);
+            border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden;
+        }
+        .hw-val { font-size: 1.4rem; font-weight: 700; color: var(--text-main); line-height: 1.1; }
+        .hw-lbl { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; margin-top: 5px; font-weight: 600; }
+        .weather-icon { font-size: 1.5rem; position: absolute; right: 10px; top: 10px; opacity: 0.5; }
+
+        /* --- 4. INTERACTIVE ELEMENTS --- */
+        .btn {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-main);
+            padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;
+        }
+        .btn:hover { background: rgba(255,255,255,0.1); border-color: var(--text-main); }
+        .btn-primary { background: var(--primary); color: #fff; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .btn-primary:hover { filter: brightness(1.2); transform: translateY(-1px); }
+        
+        input, select, textarea { 
+            width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border); 
+            color: var(--text-main); padding: 10px; border-radius: 8px; font-family: inherit; font-size: 0.9rem;
+        }
+        [data-theme="light"] input, [data-theme="light"] select { background: rgba(255,255,255,0.5); }
+        input:focus { border-color: var(--primary); }
+
+        /* NAVIGATION */
+        .nav-btn { 
+            width: 100%; text-align: left; padding: 12px; color: var(--text-dim); background: none; border: none;
+            border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.2s; display: flex; gap: 12px; align-items: center;
+        }
+        .nav-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.03); }
+        .nav-btn.active { color: var(--primary); background: rgba(255,255,255,0.05); border-left: 3px solid var(--primary); }
+
+        /* LINKS GRID */
+        .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+        .link-card {
+            background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px;
+            padding: 15px; text-align: center; color: var(--text-main); text-decoration: none;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s; position: relative; height: 100px;
+        }
+        .link-card:hover { border-color: var(--primary); transform: translateY(-2px); background: rgba(255,255,255,0.05); }
+        .link-icon-img { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; background: #fff; padding: 2px; }
+        .link-name { font-size: 0.75rem; font-weight: 600; line-height: 1.2; word-break: break-word; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .del-btn { position: absolute; top: 2px; right: 2px; color: #ff1744; font-size: 10px; padding: 4px; display: none; cursor: pointer; z-index: 2; }
+        .link-card:hover .del-btn { display: block; }
+
+        /* TASK LIST & IMAGES */
+        .task-item { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-bottom: 1px solid var(--border); animation: fadeIn 0.3s; }
+        .task-top { display: flex; align-items: center; gap: 10px; }
+        .task-check { width: 18px; height: 18px; border: 2px solid var(--text-dim); border-radius: 4px; cursor: pointer; flex-shrink: 0; }
+        .task-check.checked { background: var(--primary); border-color: var(--primary); }
+        .task-text { flex: 1; font-size: 0.95rem; }
+        .task-text.checked { text-decoration: line-through; opacity: 0.5; }
+        .task-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 5px; display: none; }
+        .task-img.visible { display: block; cursor: zoom-in; }
+
+        /* CALENDAR SYSTEM */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-top: 10px; }
+        .cal-day-name { color: var(--text-dim); font-size: 0.7rem; padding-bottom: 5px; font-weight: 700; }
+        .cal-day { padding: 8px 2px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; border: 1px solid transparent; position: relative; }
+        .cal-day:hover { background: rgba(255,255,255,0.05); }
+        .cal-day.today { color: var(--primary); font-weight: 800; border-color: var(--primary); }
+        .cal-day.active { background: var(--primary); color: white; }
+        .cal-day.has-event::after { content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: var(--primary); border-radius: 50%; }
+        .cal-day.active.has-event::after { background: white; }
+
+        /* SCHEDULE LIST */
+        .sched-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); animation: fadeIn 0.2s; }
+        .sched-time { font-weight: 700; color: var(--primary); width: 60px; }
+        .sched-desc { flex: 1; font-size: 0.9rem; }
+
+        /* ACCORDION & SETTINGS */
+        .acc-item { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        .acc-head { background: rgba(255,255,255,0.03); padding: 12px; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; }
+        .acc-head:hover { background: rgba(255,255,255,0.05); color: var(--primary); }
+        .acc-body { display: none; padding: 15px; background: rgba(0,0,0,0.1); font-size: 0.9rem; color: var(--text-dim); }
+        .acc-body.open { display: block; }
+
+        /* STATS STATS */
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
+        .stat-box { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; text-align: center; }
+        .stat-val { font-size: 1rem; font-weight: 700; color: var(--text-main); }
+        .stat-lbl { font-size: 0.6rem; color: var(--text-dim); }
+
+        /* MOBILE NAV */
+        .mobile-nav {
+            position: fixed; bottom: 0; width: 100%; height: 65px; background: var(--bg-panel); backdrop-filter: blur(30px);
+            border-top: 1px solid var(--border); display: none; z-index: 999; padding-bottom: env(safe-area-inset-bottom);
+        }
+        .mob-btn { flex: 1; background: none; border: none; color: var(--text-dim); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        .mob-btn.active { color: var(--primary); }
+
+        @media (min-width: 800px) { .sidebar { display: flex; } .app-container { max-width: 100%; } }
+        @media (max-width: 799px) { .mobile-nav { display: flex; } .main-content { padding-bottom: 90px; } .hud-grid { grid-template-columns: 1fr 1fr; } }
+        
+        /* UTILS */
+        .hidden { display: none !important; }
+        .flex-row { display: flex; gap: 10px; align-items: center; }
+        .mt-2 { margin-top: 20px; }
+        .w-full { width: 100%; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="tech-bg"></div>
+
+    <div class="app-container">
+        
+        <aside class="sidebar">
+            <div style="margin-bottom:30px;">
+                <div style="font-size:1.6rem; font-weight:800; color:var(--text-main); letter-spacing:-1px;">TASKLY <span style="color:var(--primary)">.OS</span></div>
+                <div style="font-size:0.75rem; color:var(--text-dim); margin-top:5px;" data-i18n="subtitle">Google Standard Edition</div>
+            </div>
+
+            <nav style="flex:1;">
+                <button class="nav-btn active" onclick="nav('dashboard')"><span>📊</span> <span data-i18n="menu_dash">Dashboard</span></button>
+                <button class="nav-btn" onclick="nav('calendar')"><span>📅</span> <span data-i18n="menu_cal">Agenda</span></button>
+                <button class="nav-btn" onclick="nav('academia')"><span>🎓</span> <span data-i18n="menu_aca">Academia</span></button>
+                <button class="nav-btn" onclick="nav('health')"><span>⚡</span> <span data-i18n="menu_fit">Salud Física</span></button>
+                <button class="nav-btn" onclick="nav('ai')"><span>🧠</span> <span data-i18n="menu_ai">Motores IA</span></button>
+                <button class="nav-btn" onclick="nav('news')"><span>🌍</span> <span data-i18n="menu_news">Noticias</span></button>
+            </nav>
+
+            <div class="glass-card" style="padding: 15px; margin-bottom: 0;">
+                <h2 style="font-size:0.7rem;" data-i18n="prefs">PREFS</h2>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <div style="width:20px; height:20px; background:#2979ff; border-radius:50%; cursor:pointer;" onclick="setThemeColor('#2979ff')"></div>
+                    <div style="width:20px; height:20px; background:#00e676; border-radius:50%; cursor:pointer;" onclick="setThemeColor('#00e676')"></div>
+                    <div style="width:20px; height:20px; background:#ff1744; border-radius:50%; cursor:pointer;" onclick="setThemeColor('#ff1744')"></div>
+                    <div style="width:20px; height:20px; background:#ffea00; border-radius:50%; cursor:pointer;" onclick="setThemeColor('#ffea00')"></div>
+                    <div style="width:20px; height:20px; background:#ffffff; border-radius:50%; cursor:pointer;" onclick="setThemeColor('#ffffff')"></div>
+                </div>
+                <div class="flex-row" style="margin-top:15px;">
+                    <button class="btn" style="flex:1; font-size:0.7rem;" onclick="toggleDarkMode()"><span data-i18n="mode">MODE</span></button>
+                    <button class="btn" style="flex:1; font-size:0.7rem;" onclick="openSyncSettings()"><span data-i18n="sync">SYNC</span></button>
+                </div>
+                <div style="display:flex; gap:5px; margin-top:10px;">
+                    <button class="btn" style="flex:1; font-size:0.6rem; padding:4px;" onclick="setLang('es')">ES</button>
+                    <button class="btn" style="flex:1; font-size:0.6rem; padding:4px;" onclick="setLang('en')">EN</button>
+                    <button class="btn" style="flex:1; font-size:0.6rem; padding:4px;" onclick="setLang('ro')">RO</button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content" id="mainScroll">
+            
+            <div class="hud-grid">
+                <div class="hud-widget">
+                    <div class="hw-val" id="clock">00:00:00</div>
+                    <div class="hw-lbl" id="date">--</div>
+                </div>
+                <div class="hud-widget">
+                    <div class="weather-icon" id="w-icon">⛅</div>
+                    <div class="hw-val" id="w-temp">--°</div>
+                    <div class="hw-lbl" id="w-desc" data-i18n="hud_weather">CLIMA</div>
+                </div>
+                <div class="hud-widget" style="border-left: 3px solid var(--primary);">
+                    <div class="hw-val" id="nextEvent">--</div>
+                    <div class="hw-lbl" data-i18n="hud_next">SIGUIENTE</div>
+                </div>
+            </div>
+
+            <div id="dashboard" class="section">
+                <div class="glass-card">
+                    <h2 data-i18n="sec_tasks">TAREAS & FOTOS</h2>
+                    <div class="flex-row" style="margin-bottom:15px; align-items: stretch;">
+                        <input type="text" id="taskInput" placeholder="Nueva tarea..." data-i18n-ph="ph_task" style="flex:1;">
+                        <label class="btn" style="padding:0 12px;">
+                            📷 <input type="file" id="taskImgInput" accept="image/*" style="display:none;" onchange="alert('Imagen seleccionada')">
+                        </label>
+                        <button class="btn-primary" onclick="addTask()" style="width: auto; padding: 0 20px;">+</button>
+                    </div>
+                    <div id="taskList"></div>
+                </div>
+
+                <div class="glass-card">
+                    <h2 data-i18n="sec_schedule">AGENDA HOY</h2>
+                    <div class="flex-row" style="margin-bottom:10px;">
+                        <input type="time" id="quickTime" style="flex:0 0 80px;">
+                        <input type="text" id="quickEvent" placeholder="Actividad rápida..." data-i18n-ph="ph_quick">
+                        <button class="btn" onclick="addQuickSchedule()">+</button>
+                    </div>
+                    <div id="todayScheduleList"></div>
+                </div>
+            </div>
+
+            <div id="calendar" class="section hidden">
+                <div class="glass-card">
+                    <div class="flex-row" style="justify-content:space-between; margin-bottom:10px;">
+                        <button class="btn" onclick="changeMonth(-1)">◀</button>
+                        <h2 id="calMonthTitle" style="margin:0; font-size:1rem;">MES</h2>
+                        <button class="btn" onclick="changeMonth(1)">▶</button>
+                    </div>
+                    <div class="calendar-grid" id="calGrid"></div>
+                </div>
+
+                <div class="glass-card">
+                    <h2 id="selectedDateTitle" data-i18n="sec_day_detail">DETALLE DEL DÍA</h2>
+                    <div id="dayScheduleList"></div>
+                    <button class="btn mt-2 w-full" onclick="openProtoSelector()" data-i18n="btn_assign_workout">📅 ASIGNAR ENTRENAMIENTO AQUÍ</button>
+                </div>
+            </div>
+
+            <div id="academia" class="section hidden">
+                <div class="flex-row" style="margin-bottom:20px;">
+                    <button class="btn" id="btnModeUni" onclick="setAcaMode('uni')" data-i18n="btn_uni">UNIVERSIDAD</button>
+                    <button class="btn" id="btnModeWork" onclick="setAcaMode('work')" data-i18n="btn_work">TRABAJO</button>
+                </div>
+                <div class="glass-card">
+                    <h2 data-i18n="sec_links">ACCESOS RÁPIDOS</h2>
+                    <div class="links-grid" id="acaLinks"></div>
+                    <div class="mt-2"><button class="btn" onclick="addLinkPrompt('acaLinks')" data-i18n="btn_link">+ LINK</button></div>
+                </div>
+            </div>
+
+            <div id="health" class="section hidden">
+                <div class="glass-card">
+                    <h2 data-i18n="sec_log">REGISTRO DE PESO</h2>
+                    <div class="flex-row">
+                        <input type="number" id="fitWeight" placeholder="Kg" step="0.1">
+                        <button class="btn-primary" onclick="addFitLog()">💾</button>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="stat-box"><div class="stat-val" id="statAvgAll">--</div><div class="stat-lbl" data-i18n="lbl_avg_total">AVG TOTAL</div></div>
+                        <div class="stat-box"><div class="stat-val" id="statAvgWeek">--</div><div class="stat-lbl" data-i18n="lbl_avg_7">AVG 7 DÍAS</div></div>
+                        <div class="stat-box"><div class="stat-val" id="statAvgMonth">--</div><div class="stat-lbl" data-i18n="lbl_avg_30">AVG 30 DÍAS</div></div>
+                    </div>
+                    <div style="margin-top:15px; max-height:150px; overflow-y:auto;" id="fitHistory"></div>
+                </div>
+
+                <div class="glass-card">
+                    <h2 data-i18n="sec_proto">EDITOR DE ENTRENAMIENTOS</h2>
+                    <div id="protoList"></div>
+                    <div class="mt-2 flex-row">
+                        <input type="text" id="newProtoName" placeholder="Nombre Rutina (ej: Pierna)" data-i18n-ph="ph_routine">
+                        <button class="btn" onclick="addProto()" data-i18n="btn_create">CREAR</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ai" class="section hidden">
+                <div class="glass-card">
+                    <h2 data-i18n="sec_ai">MOTORES DE INTELIGENCIA</h2>
+                    <div class="links-grid" id="aiLinks"></div>
+                    <button class="btn mt-2" onclick="addLinkPrompt('aiLinks')" data-i18n="btn_add_engine">+ AÑADIR MOTOR</button>
+                </div>
+            </div>
+
+            <div id="news" class="section hidden">
+                <div class="glass-card">
+                    <h2 data-i18n="sec_sports">DEPORTES</h2>
+                    <div class="links-grid" id="newsSport"></div>
+                    <button class="btn mt-2" onclick="addLinkPrompt('newsSport')" data-i18n="btn_link">+ LINK</button>
+                </div>
+                <div class="glass-card">
+                    <h2 data-i18n="sec_world">MUNDO</h2>
+                    <div class="links-grid" id="newsWorld"></div>
+                    <button class="btn mt-2" onclick="addLinkPrompt('newsWorld')" data-i18n="btn_link">+ LINK</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <nav class="mobile-nav">
+        <button class="mob-btn active" onclick="nav('dashboard')"><span>📊</span></button>
+        <button class="mob-btn" onclick="nav('calendar')"><span>📅</span></button>
+        <button class="mob-btn" onclick="nav('academia')"><span>🎓</span></button>
+        <button class="mob-btn" onclick="nav('health')"><span>⚡</span></button>
+        <button class="mob-btn" onclick="nav('news')"><span>🌍</span></button>
+    </nav>
+
+    <div id="syncModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; display:none; align-items:center; justify-content:center;">
+        <div class="glass-card" style="width:90%; max-width:400px; background:#111;">
+            <h2 data-i18n="modal_sync">CLOUD SYNC</h2>
+            <input type="text" id="cfg_bin" placeholder="JSONBin Bin ID" style="margin-bottom:10px;">
+            <input type="password" id="cfg_key" placeholder="API Key" style="margin-bottom:10px;">
+            <div class="flex-row">
+                <button class="btn-primary" style="flex:1;" onclick="saveSyncCfg()" data-i18n="btn_save">SAVE</button>
+                <button class="btn" style="flex:1;" onclick="document.getElementById('syncModal').style.display='none'" data-i18n="btn_close">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+/**
+ * TASKLY PRO - GOOGLE STANDARD EDITION v2.1
+ * Optimization: Full Translation System (ES/EN/RO), Restored Color Palette
+ */
+
+// --- 1. DATA & LOCALIZATION ---
+const TRANSLATIONS = {
+    es: {
+        subtitle: "Google Standard Edition", prefs: "PREFS", mode: "MODO", sync: "SYNC",
+        menu_dash: "Dashboard", menu_cal: "Agenda", menu_aca: "Academia", menu_fit: "Salud", menu_ai: "IA", menu_news: "Noticias",
+        hud_next: "SIGUIENTE", hud_weather: "CLIMA",
+        sec_tasks: "TAREAS & FOTOS", sec_schedule: "AGENDA HOY", sec_links: "ACCESOS RÁPIDOS", sec_log: "REGISTRO DE PESO", sec_proto: "ENTRENAMIENTOS",
+        sec_ai: "MOTORES IA", sec_day_detail: "DETALLE DEL DÍA", sec_sports: "DEPORTES", sec_world: "MUNDO",
+        days_short: ['D','L','M','M','J','V','S'],
+        ph_task: "Nueva tarea...", ph_quick: "Actividad rápida...", ph_routine: "Nombre Rutina...",
+        btn_assign_workout: "📅 ASIGNAR ENTRENAMIENTO AQUÍ", btn_uni: "UNIVERSIDAD", btn_work: "TRABAJO", btn_link: "+ LINK",
+        lbl_avg_total: "AVG TOTAL", lbl_avg_7: "AVG 7 DÍAS", lbl_avg_30: "AVG 30 DÍAS",
+        btn_create: "CREAR", btn_add_engine: "+ AÑADIR MOTOR", modal_sync: "NUBE SYNC", btn_save: "GUARDAR", btn_close: "CERRAR"
+    },
+    en: {
+        subtitle: "Google Standard Edition", prefs: "PREFS", mode: "MODE", sync: "SYNC",
+        menu_dash: "Dashboard", menu_cal: "Schedule", menu_aca: "Academy", menu_fit: "Health", menu_ai: "AI", menu_news: "News",
+        hud_next: "NEXT UP", hud_weather: "WEATHER",
+        sec_tasks: "TASKS & PHOTOS", sec_schedule: "TODAY'S SCHEDULE", sec_links: "QUICK ACCESS", sec_log: "WEIGHT LOG", sec_proto: "WORKOUTS",
+        sec_ai: "AI ENGINES", sec_day_detail: "DAY DETAILS", sec_sports: "SPORTS", sec_world: "WORLD",
+        days_short: ['S','M','T','W','T','F','S'],
+        ph_task: "New task...", ph_quick: "Quick activity...", ph_routine: "Routine Name...",
+        btn_assign_workout: "📅 ASSIGN WORKOUT HERE", btn_uni: "UNIVERSITY", btn_work: "WORK", btn_link: "+ LINK",
+        lbl_avg_total: "AVG TOTAL", lbl_avg_7: "AVG 7 DAYS", lbl_avg_30: "AVG 30 DAYS",
+        btn_create: "CREATE", btn_add_engine: "+ ADD ENGINE", modal_sync: "CLOUD SYNC", btn_save: "SAVE", btn_close: "CLOSE"
+    },
+    ro: {
+        subtitle: "Ediția Standard Google", prefs: "PREF", mode: "MOD", sync: "SYNC",
+        menu_dash: "Panou", menu_cal: "Agendă", menu_aca: "Academie", menu_fit: "Sănătate", menu_ai: "IA", menu_news: "Știri",
+        hud_next: "URMĂTORUL", hud_weather: "VREME",
+        sec_tasks: "SARCINI & FOTO", sec_schedule: "AGENDA AZI", sec_links: "ACCES RAPID", sec_log: "JURNAL GREUTATE", sec_proto: "ANTRENAMENTE",
+        sec_ai: "MOTOARE IA", sec_day_detail: "DETALII ZI", sec_sports: "SPORTURI", sec_world: "LUME",
+        days_short: ['D','L','M','M','J','V','S'],
+        ph_task: "Sarcină nouă...", ph_quick: "Activitate rapidă...", ph_routine: "Nume Rutină...",
+        btn_assign_workout: "📅 ATRIBUIE ANTRENAMENT AICI", btn_uni: "UNIVERSITATE", btn_work: "MUNCĂ", btn_link: "+ LINK",
+        lbl_avg_total: "MEDIE TOTAL", lbl_avg_7: "MEDIE 7 ZILE", lbl_avg_30: "MEDIE 30 ZILE",
+        btn_create: "CREEAZĂ", btn_add_engine: "+ ADAUGĂ MOTOR", modal_sync: "SYNC CLOUD", btn_save: "SALVEAZĂ", btn_close: "ÎNCHIDE"
+    }
+};
+
+const DEFAULT_DATA = {
+    config: { theme: '#2979ff', dark: true, lang: 'es', sync: {bin:'', key:''} },
+    tasks: [],
+    acaMode: 'uni',
+    events: {},
+    links: {
+        acaLinks: [],
+        aiLinks: [{n:"Gemini", u:"https://gemini.google.com"}, {n:"ChatGPT", u:"https://chat.openai.com"}],
+        newsSport: [{n:"Marca", u:"https://marca.com"}],
+        newsWorld: []
+    },
+    fitLog: [],
+    fitProtos: [
+        { id: 'p1', title: "FUERZA (Hipertrofia)", content: "1. Press Banca 4x8\n2. Sentadilla 4x10" },
+        { id: 'p2', title: "CARDIO (HIIT)", content: "30s Sprint / 30s Trote x10" }
+    ]
+};
+
+let app = JSON.parse(localStorage.getItem('taskly_pro_v2')) || DEFAULT_DATA;
+let curLang = app.config.lang;
+let viewDate = new Date(); 
+let selectedDateStr = new Date().toISOString().split('T')[0];
+
+// --- 2. CORE ENGINE ---
+
+function init() {
+    setThemeColor(app.config.theme);
+    if(!app.config.dark) document.body.setAttribute('data-theme', 'light');
+    if(!app.events) app.events = {};
+    if(app.schedule) { delete app.schedule; save(); } // Migration
+
+    renderAll();
+    setInterval(updateClock, 1000);
+    fetchWeather();
+    if(navigator.onLine && app.config.sync.bin) syncCloud(false);
+}
+
+function save() {
+    localStorage.setItem('taskly_pro_v2', JSON.stringify(app));
+    if(navigator.onLine && app.config.sync.bin) syncCloud(true);
+}
+
+function renderAll() {
+    applyLang();
+    renderTasks();
+    renderLinks('acaLinks'); renderLinks('aiLinks'); renderLinks('newsSport'); renderLinks('newsWorld');
+    renderFit();
+    renderProtos();
+    renderCalendar();
+    renderDayDetails(selectedDateStr);
+    updateClock();
+}
+
+function nav(id) {
+    document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    document.querySelectorAll('.nav-btn, .mob-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('mainScroll').scrollTop = 0;
+    if(id === 'calendar') renderCalendar();
+}
+
+// --- 3. CLOCK & WEATHER ---
+
+function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').innerText = now.toLocaleTimeString(curLang, {hour:'2-digit', minute:'2-digit', second: '2-digit'});
+    document.getElementById('date').innerText = now.toLocaleDateString(curLang, {weekday:'short', day:'numeric', month:'short'}).toUpperCase();
+
+    const todayStr = now.toISOString().split('T')[0];
+    const evs = (app.events[todayStr] || []).sort((a,b) => a.t.localeCompare(b.t));
+    const next = evs.find(e => e.t > now.toTimeString().substring(0,5));
+    
+    if(next) {
+        document.getElementById('nextEvent').innerText = next.t;
+        document.querySelector('[data-i18n="hud_next"]').innerText = next.d.toUpperCase();
+    } else {
+        document.getElementById('nextEvent').innerText = "--:--";
+        document.querySelector('[data-i18n="hud_next"]').innerText = "FREE";
+    }
+}
+
+async function fetchWeather() {
+    try {
+        const lat = 40.41, lon = -3.7; 
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        const data = await res.json();
+        document.getElementById('w-temp').innerText = Math.round(data.current_weather.temperature) + "°";
+        const code = data.current_weather.weathercode;
+        document.getElementById('w-icon').innerText = code < 3 ? "☀️" : (code < 50 ? "☁️" : "🌧️");
+    } catch(e) { console.log("Weather err"); }
+}
+
+// --- 4. TASKS & IMAGES ---
+
+function addTask() {
+    const txt = document.getElementById('taskInput').value;
+    const file = document.getElementById('taskImgInput').files[0];
+    
+    if(txt || file) {
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                app.tasks.unshift({ txt: txt || "Foto Tarea", done: false, img: e.target.result });
+                finishAddTask();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            app.tasks.unshift({ txt: txt, done: false, img: null });
+            finishAddTask();
+        }
+    }
+}
+
+function finishAddTask() {
+    document.getElementById('taskInput').value = '';
+    document.getElementById('taskImgInput').value = '';
+    save(); renderTasks();
+}
+
+function renderTasks() {
+    const l = document.getElementById('taskList'); l.innerHTML = '';
+    app.tasks.forEach((t, i) => {
+        l.innerHTML += `<div class="task-item">
+            <div class="task-top">
+                <div class="task-check ${t.done?'checked':''}" onclick="toggleTask(${i})"></div>
+                <div class="task-text ${t.done?'checked':''}" contenteditable="true" onblur="editTask(${i}, this.innerText)">${t.txt}</div>
+                <div onclick="deleteTask(${i})" style="color:#ff1744; cursor:pointer;">✕</div>
+            </div>
+            ${t.img ? `<img src="${t.img}" class="task-img visible" onclick="window.open('${t.img}')">` : ''}
+        </div>`;
+    });
+}
+function toggleTask(i) { app.tasks[i].done = !app.tasks[i].done; save(); renderTasks(); }
+function deleteTask(i) { app.tasks.splice(i, 1); save(); renderTasks(); }
+function editTask(i,v) { app.tasks[i].txt = v; save(); }
+
+// --- 5. CALENDAR & SCHEDULE ---
+
+function renderCalendar() {
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    
+    TRANSLATIONS[curLang].days_short.forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`);
+
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    document.getElementById('calMonthTitle').innerText = viewDate.toLocaleDateString(curLang, {month:'long', year:'numeric'}).toUpperCase();
+
+    const firstDay = new Date(year, month, 1).getDay(); 
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    for(let d=1; d<=daysInMonth; d++) {
+        const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const hasEvent = app.events[dStr] && app.events[dStr].length > 0;
+        const isToday = dStr === todayStr;
+        const isActive = dStr === selectedDateStr;
+
+        grid.innerHTML += `<div class="cal-day ${isToday?'today':''} ${isActive?'active':''} ${hasEvent?'has-event':''}" 
+            onclick="selectDate('${dStr}')">${d}</div>`;
+    }
+}
+
+function changeMonth(delta) {
+    viewDate.setMonth(viewDate.getMonth() + delta);
+    renderCalendar();
+}
+
+function selectDate(dStr) {
+    selectedDateStr = dStr;
+    renderCalendar();
+    renderDayDetails(dStr);
+}
+
+function renderDayDetails(dStr) {
+    // Dynamic text, not translated by static map
+    document.getElementById('selectedDateTitle').innerText = (TRANSLATIONS[curLang].sec_day_detail || "AGENDA") + ": " + dStr;
+    const list = app.events[dStr] || [];
+    list.sort((a,b) => a.t.localeCompare(b.t));
+    
+    const c = document.getElementById('dayScheduleList');
+    c.innerHTML = list.length ? '' : '<div style="color:var(--text-dim); padding:10px;">--</div>';
+    list.forEach((e, i) => {
+        c.innerHTML += `<div class="sched-item">
+            <span class="sched-time">${e.t}</span>
+            <span class="sched-desc">${e.d}</span>
+            <span style="color:#ff1744; cursor:pointer;" onclick="delEvent('${dStr}', ${i})">✕</span>
+        </div>`;
+    });
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if(dStr === todayStr) {
+        document.getElementById('todayScheduleList').innerHTML = c.innerHTML;
+    }
+}
+
+function addQuickSchedule() {
+    const t = document.getElementById('quickTime').value;
+    const d = document.getElementById('quickEvent').value;
+    if(t && d) {
+        const date = new Date().toISOString().split('T')[0];
+        if(!app.events[date]) app.events[date] = [];
+        app.events[date].push({t, d});
+        document.getElementById('quickEvent').value = '';
+        save();
+        renderDayDetails(date);
+        renderCalendar();
+    }
+}
+
+function delEvent(dStr, idx) {
+    app.events[dStr].splice(idx, 1);
+    save(); renderDayDetails(dStr); renderCalendar();
+}
+
+// --- 6. WORKOUTS & AUTO-SCHEDULER ---
+
+function renderProtos() {
+    const c = document.getElementById('protoList'); c.innerHTML = '';
+    app.fitProtos.forEach((p, i) => {
+        c.innerHTML += `<div class="acc-item">
+            <div class="acc-head" onclick="this.nextElementSibling.classList.toggle('open')">
+                <span>${p.title}</span>
+                <button class="btn" style="padding:2px 6px; font-size:0.6rem;" onclick="event.stopPropagation(); deleteProto(${i})">X</button>
+            </div>
+            <div class="acc-body" contenteditable="true" onblur="updateProto(${i}, this.innerText)">${p.content}</div>
+        </div>`;
+    });
+}
+
+function addProto() {
+    const n = document.getElementById('newProtoName').value;
+    if(n) {
+        app.fitProtos.push({id: Date.now(), title: n, content: "Describe..."});
+        save(); renderProtos();
+    }
+}
+
+function updateProto(i, txt) { app.fitProtos[i].content = txt; save(); }
+function deleteProto(i) { app.fitProtos.splice(i,1); save(); renderProtos(); }
+
+function openProtoSelector() {
+    let msg = "ID:\n";
+    app.fitProtos.forEach((p,i) => msg += `${i}: ${p.title}\n`);
+    const choice = prompt(msg);
+    if(choice !== null && app.fitProtos[choice]) {
+        const time = prompt("HH:MM:", "09:00");
+        if(time) {
+            if(!app.events[selectedDateStr]) app.events[selectedDateStr] = [];
+            app.events[selectedDateStr].push({t: time, d: "🏋️ " + app.fitProtos[choice].title});
+            save(); renderDayDetails(selectedDateStr); renderCalendar();
+        }
+    }
+}
+
+// --- 7. HEALTH & WEIGHT ---
+
+function addFitLog() {
+    const w = parseFloat(document.getElementById('fitWeight').value);
+    if(w) {
+        app.fitLog.unshift({d: new Date().toISOString(), w: w});
+        save(); renderFit();
+    }
+}
+
+function renderFit() {
+    const h = document.getElementById('fitHistory'); h.innerHTML = '';
+    if(!app.fitLog.length) return;
+
+    const vals = app.fitLog.map(x => x.w);
+    const avgAll = vals.reduce((a,b)=>a+b,0) / vals.length;
+    
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+    const weekLogs = app.fitLog.filter(l => new Date(l.d) > oneWeekAgo);
+    const avgWeek = weekLogs.length ? weekLogs.reduce((a,b)=>a+b.w,0)/weekLogs.length : 0;
+
+    const oneMonthAgo = new Date(now.getTime() - 30*24*60*60*1000);
+    const monthLogs = app.fitLog.filter(l => new Date(l.d) > oneMonthAgo);
+    const avgMonth = monthLogs.length ? monthLogs.reduce((a,b)=>a+b.w,0)/monthLogs.length : 0;
+
+    document.getElementById('statAvgAll').innerText = avgAll.toFixed(1);
+    document.getElementById('statAvgWeek').innerText = avgWeek ? avgWeek.toFixed(1) : '--';
+    document.getElementById('statAvgMonth').innerText = avgMonth ? avgMonth.toFixed(1) : '--';
+
+    app.fitLog.slice(0,10).forEach(l => {
+        const date = new Date(l.d).toLocaleDateString();
+        h.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:0.8rem; padding:4px 0; border-bottom:1px solid var(--border);"><span>${date}</span><span>${l.w} kg</span></div>`;
+    });
+}
+
+// --- 8. LINKS & FAVICONS ---
+
+function renderLinks(key) {
+    const c = document.getElementById(key);
+    c.innerHTML = '';
+    app.links[key].forEach((l, i) => {
+        const iconUrl = `https://www.google.com/s2/favicons?domain=${l.u}&sz=64`;
+        c.innerHTML += `<a href="${l.u}" target="_blank" class="link-card">
+            <div class="del-btn" onclick="event.preventDefault(); removeLink('${key}', ${i})">✕</div>
+            <img src="${iconUrl}" class="link-icon-img" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzg4OCIgZD0iTTEyIDJDMiAyIDIgMTIgMiAxMnMyIDEwIDEwIDEwIDEwLTEwIDEwLTEwUzIyIDIgMTIgMnp6Ii8+PC9zdmc+'">
+            <div class="link-name">${l.n}</div>
+        </a>`;
+    });
+}
+
+function addLinkPrompt(key) {
+    const n = prompt("Nombre:");
+    if(!n) return;
+    let u = prompt("URL:");
+    if(n && u) {
+        if(!u.startsWith('http')) u = 'https://' + u;
+        app.links[key].push({n, u});
+        save(); renderLinks(key);
+    }
+}
+
+function removeLink(key, i) {
+    if(confirm("?")) { app.links[key].splice(i,1); save(); renderLinks(key); }
+}
+
+// --- UTILS ---
+function setThemeColor(c) { document.documentElement.style.setProperty('--primary', c); app.config.theme = c; save(); }
+function toggleDarkMode() { app.config.dark = !app.config.dark; app.config.dark ? document.body.removeAttribute('data-theme') : document.body.setAttribute('data-theme','light'); save(); }
+function setLang(l) { app.config.lang = l; curLang = l; save(); renderAll(); }
+
+function applyLang() { 
+    const t = TRANSLATIONS[curLang]; 
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n'); if(t[k]) el.innerText = t[k]; 
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        const k = el.getAttribute('data-i18n-ph'); if(t[k]) el.placeholder = t[k]; 
+    });
+}
+
+function setAcaMode(m) { app.acaMode = m; save(); renderAll(); }
+function openSyncSettings() { document.getElementById('syncModal').style.display='flex'; }
+async function saveSyncCfg() {
+    app.config.sync.bin = document.getElementById('cfg_bin').value;
+    app.config.sync.key = document.getElementById('cfg_key').value;
+    save(); document.getElementById('syncModal').style.display='none';
+}
+async function syncCloud(push) {
+    if(!app.config.sync.bin) return;
+    const url = `https://api.jsonbin.io/v3/b/${app.config.sync.bin}`;
+    const h = { 'Content-Type': 'application/json', 'X-Master-Key': app.config.sync.key };
+    try {
+        if(push) await fetch(url, { method: 'PUT', headers: h, body: JSON.stringify(app) });
+        else {
+            const res = await fetch(url+'/latest', { headers: h });
+            const d = await res.json();
+            if(d.record) { app = d.record; save(); renderAll(); }
+        }
+    } catch(e) { console.error(e); }
+}
+
+// START
+init();
+
+</script>
+</body>
+</html>
