@@ -19,6 +19,7 @@
             --font: 'Inter', sans-serif;
             --radius: 14px;
             --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            --status-color: #ff1744; /* Default offline/unsynced */
         }
 
         [data-theme="light"] {
@@ -65,6 +66,9 @@
         .hw-val { font-size: 1.4rem; font-weight: 700; color: var(--text-main); line-height: 1.1; }
         .hw-lbl { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; margin-top: 5px; font-weight: 600; }
         .weather-icon { font-size: 1.5rem; position: absolute; right: 10px; top: 10px; opacity: 0.5; }
+        
+        /* Status Dot */
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--status-color); position: absolute; top: 10px; right: 10px; transition: 0.3s; box-shadow: 0 0 10px var(--status-color); }
 
         /* --- 4. INTERACTIVE ELEMENTS --- */
         .btn {
@@ -209,6 +213,7 @@
             
             <div class="hud-grid">
                 <div class="hud-widget">
+                    <div class="status-dot" id="statusDot"></div>
                     <div class="hw-val" id="clock">00:00:00</div>
                     <div class="hw-lbl" id="date">--</div>
                 </div>
@@ -321,6 +326,28 @@
                     <button class="btn mt-2" onclick="addLinkPrompt('newsWorld')" data-i18n="btn_link">+ LINK</button>
                 </div>
             </div>
+            
+            <div id="settings" class="section hidden">
+                <div class="glass-card">
+                    <h2 data-i18n="prefs">CONFIGURACIÓN</h2>
+                    <div style="display:flex; gap:8px; margin-top:10px; justify-content:center;">
+                        <div style="width:30px; height:30px; background:#2979ff; border-radius:50%; cursor:pointer;" onclick="setThemeColor('#2979ff')"></div>
+                        <div style="width:30px; height:30px; background:#00e676; border-radius:50%; cursor:pointer;" onclick="setThemeColor('#00e676')"></div>
+                        <div style="width:30px; height:30px; background:#ff1744; border-radius:50%; cursor:pointer;" onclick="setThemeColor('#ff1744')"></div>
+                        <div style="width:30px; height:30px; background:#ffea00; border-radius:50%; cursor:pointer;" onclick="setThemeColor('#ffea00')"></div>
+                        <div style="width:30px; height:30px; background:#ffffff; border-radius:50%; cursor:pointer;" onclick="setThemeColor('#ffffff')"></div>
+                    </div>
+                    <div class="flex-row" style="margin-top:20px;">
+                        <button class="btn" style="flex:1;" onclick="toggleDarkMode()"><span data-i18n="mode">MODE</span></button>
+                        <button class="btn" style="flex:1;" onclick="openSyncSettings()"><span data-i18n="sync">SYNC</span></button>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:20px;">
+                        <button class="btn" style="flex:1;" onclick="setLang('es')">ES</button>
+                        <button class="btn" style="flex:1;" onclick="setLang('en')">EN</button>
+                        <button class="btn" style="flex:1;" onclick="setLang('ro')">RO</button>
+                    </div>
+                </div>
+            </div>
 
         </main>
     </div>
@@ -331,6 +358,7 @@
         <button class="mob-btn" onclick="nav('academia')"><span>🎓</span></button>
         <button class="mob-btn" onclick="nav('health')"><span>⚡</span></button>
         <button class="mob-btn" onclick="nav('news')"><span>🌍</span></button>
+        <button class="mob-btn" onclick="nav('settings')"><span>⚙️</span></button>
     </nav>
 
     <div id="syncModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; display:none; align-items:center; justify-content:center;">
@@ -347,8 +375,8 @@
 
 <script>
 /**
- * TASKLY PRO - GOOGLE STANDARD EDITION v2.1
- * Optimization: Full Translation System (ES/EN/RO), Restored Color Palette
+ * TASKLY PRO - GOOGLE STANDARD EDITION v2.2
+ * Optimization: Mobile Parity (Settings View) & Auto-Sync Engine
  */
 
 // --- 1. DATA & LOCALIZATION ---
@@ -413,6 +441,7 @@ let app = JSON.parse(localStorage.getItem('taskly_pro_v2')) || DEFAULT_DATA;
 let curLang = app.config.lang;
 let viewDate = new Date(); 
 let selectedDateStr = new Date().toISOString().split('T')[0];
+let syncTimer = null;
 
 // --- 2. CORE ENGINE ---
 
@@ -420,17 +449,38 @@ function init() {
     setThemeColor(app.config.theme);
     if(!app.config.dark) document.body.setAttribute('data-theme', 'light');
     if(!app.events) app.events = {};
-    if(app.schedule) { delete app.schedule; save(); } // Migration
+    if(app.schedule) { delete app.schedule; save(); }
 
     renderAll();
     setInterval(updateClock, 1000);
     fetchWeather();
+    
+    // Auto-Sync Listeners
+    window.addEventListener('online', () => { updateSyncStatus('sync'); syncCloud(false); });
+    window.addEventListener('offline', () => updateSyncStatus('offline'));
+    updateSyncStatus(navigator.onLine ? 'online' : 'offline');
+    
     if(navigator.onLine && app.config.sync.bin) syncCloud(false);
 }
 
 function save() {
+    // 1. Always save local immediately (Offline capability)
     localStorage.setItem('taskly_pro_v2', JSON.stringify(app));
-    if(navigator.onLine && app.config.sync.bin) syncCloud(true);
+    updateSyncStatus('local');
+
+    // 2. Auto-Sync Cloud with Debounce (Wait 2s of inactivity)
+    clearTimeout(syncTimer);
+    if(navigator.onLine && app.config.sync.bin) {
+        syncTimer = setTimeout(() => syncCloud(true), 2000);
+    }
+}
+
+function updateSyncStatus(status) {
+    const el = document.documentElement;
+    if(status === 'offline') el.style.setProperty('--status-color', '#ff1744'); // Red
+    else if(status === 'local') el.style.setProperty('--status-color', '#ffea00'); // Yellow (Unsynced)
+    else if(status === 'sync') el.style.setProperty('--status-color', '#2979ff'); // Blue (Syncing)
+    else el.style.setProperty('--status-color', '#00e676'); // Green (Synced)
 }
 
 function renderAll() {
@@ -568,7 +618,6 @@ function selectDate(dStr) {
 }
 
 function renderDayDetails(dStr) {
-    // Dynamic text, not translated by static map
     document.getElementById('selectedDateTitle').innerText = (TRANSLATIONS[curLang].sec_day_detail || "AGENDA") + ": " + dStr;
     const list = app.events[dStr] || [];
     list.sort((a,b) => a.t.localeCompare(b.t));
@@ -735,9 +784,11 @@ async function saveSyncCfg() {
     app.config.sync.bin = document.getElementById('cfg_bin').value;
     app.config.sync.key = document.getElementById('cfg_key').value;
     save(); document.getElementById('syncModal').style.display='none';
+    syncCloud(false); // Try pull
 }
 async function syncCloud(push) {
     if(!app.config.sync.bin) return;
+    updateSyncStatus('sync');
     const url = `https://api.jsonbin.io/v3/b/${app.config.sync.bin}`;
     const h = { 'Content-Type': 'application/json', 'X-Master-Key': app.config.sync.key };
     try {
@@ -747,7 +798,8 @@ async function syncCloud(push) {
             const d = await res.json();
             if(d.record) { app = d.record; save(); renderAll(); }
         }
-    } catch(e) { console.error(e); }
+        updateSyncStatus('online');
+    } catch(e) { console.error(e); updateSyncStatus('local'); }
 }
 
 // START
